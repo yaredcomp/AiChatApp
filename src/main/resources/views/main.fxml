@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane fx:id="root" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.lj.aichatapp.controllers.MainController">
+
+    <top>
+        <ToolBar>
+            <Label text="JavaFX AI Chat" styleClass="title-label"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Button fx:id="btnSettings" text="⚙" onAction="#onOpenSettings"/>
+            <Button fx:id="btnClear" text="Clear" onAction="#onClearConversation"/>
+        </ToolBar>
+    </top>
+
+    <center>
+        <!-- Conversation area -->
+        <ScrollPane fx:id="scrollPane" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+            <VBox fx:id="messagesBox" spacing="8">
+                <padding>
+                    <Insets top="12" right="12" bottom="12" left="12"/>
+                </padding>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <bottom>
+        <VBox spacing="6">
+            <padding>
+                <Insets top="8" right="8" bottom="8" left="8"/>
+            </padding>
+
+            <HBox spacing="8">
+                <TextField fx:id="inputField" HBox.hgrow="ALWAYS"
+                           promptText="Type a message..." onAction="#onSendMessage"/>
+                <Button fx:id="btnSend" text="Send" onAction="#onSendMessage"/>
+            </HBox>
+
+            <HBox spacing="8">
+                <Label fx:id="typingIndicator" text="" />
+                <Pane HBox.hgrow="ALWAYS"/>
+                <Button text="Copy Last" onAction="#onCopyLast"/>
+            </HBox>
+        </VBox>
+    </bottom>
+
+</BorderPane>

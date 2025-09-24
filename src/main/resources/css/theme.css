@@ -1,0 +1,60 @@
+.root {
+    /* Light theme defaults */
+    -fx-primary: #FFFFFF;
+    -fx-secondary: #F7FAFC;
+    -fx-accent: #4299E1;
+    -fx-background: #EDF2F7;
+    -fx-text: #2D3748;
+    -fx-bubble-user-bg: #E6F4FF;
+    -fx-bubble-ai-bg: #FFFFFF;
+}
+
+.root.dark {
+    /* Dark theme defaults */
+    -fx-primary: #2D3748;
+    -fx-secondary: #4A5568;
+    -fx-accent: #805AD5;
+    -fx-background: #1A202C;
+    -fx-text: #E2E8F0;
+    -fx-bubble-user-bg: #2A3748;
+    -fx-bubble-ai-bg: #1F2933;
+}
+
+/* base layout */
+.border-pane {
+    -fx-background-color: -fx-background;
+}
+
+/* message bubble classes will be set in code */
+.message-bubble {
+    -fx-padding: 10px;
+    -fx-background-radius: 12px;  /* Fixed: using px units */
+    -fx-wrap-text: true;
+    -fx-font-size: 14px;
+}
+
+/* user message */
+.message-user {
+    -fx-background-color: -fx-bubble-user-bg;
+    -fx-text-fill: -fx-text;
+    -fx-alignment: center-right;
+}
+
+/* ai message */
+.message-ai {
+    -fx-background-color: -fx-bubble-ai-bg;
+    -fx-text-fill: -fx-text;
+    -fx-alignment: center-left;
+}
+
+/* title label on toolbar */
+.title-label {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+/* typing indicator styling */
+.typing {
+    -fx-font-style: italic;
+    -fx-opacity: 0.8;
+}
