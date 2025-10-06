@@ -1,15 +1,16 @@
 package com.lj.aichatapp.app;
 
 import com.lj.aichatapp.controllers.MainController;
+import com.lj.aichatapp.models.UserPreferences;
+import com.lj.aichatapp.utils.PreferencesManager;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import com.lj.aichatapp.models.UserPreferences;
-import com.lj.aichatapp.utils.PreferencesManager;
 
 import java.io.IOException;
-import static javafx.application.Application.launch;
+import java.util.Objects;
+
 
 /**
  * Main application entry point.
@@ -25,7 +26,7 @@ public class App extends Application {
         Scene scene = new Scene(loader.load());
 
         // attach css
-        scene.getStylesheets().add(getClass().getResource("/css/theme.css").toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/theme.css")).toExternalForm());
 
         // apply saved theme
         UserPreferences prefs = PreferencesManager.loadPreferences();

@@ -1,0 +1,15 @@
+com\lj\aichatapp\models\Conversation.class
+com\lj\aichatapp\services\AIProvider.class
+com\lj\aichatapp\app\App.class
+com\lj\aichatapp\controllers\MainController.class
+com\lj\aichatapp\models\MessageRole.class
+com\lj\aichatapp\services\AIServiceManager.class
+com\lj\aichatapp\services\GroqService.class
+com\lj\aichatapp\services\OpenRouterService.class
+com\lj\aichatapp\models\Message.class
+com\lj\aichatapp\controllers\SettingsController.class
+module-info.class
+com\lj\aichatapp\utils\FxUtils.class
+com\lj\aichatapp\services\OllamaService.class
+com\lj\aichatapp\models\UserPreferences.class
+com\lj\aichatapp\utils\PreferencesManager.class
