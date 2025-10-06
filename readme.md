@@ -149,5 +149,3 @@ Suggested rubric for instructors (example):
 - Major UI + Markdown renderer + tests + CI: 8–10 points
 
 ---
-
-# End of README
