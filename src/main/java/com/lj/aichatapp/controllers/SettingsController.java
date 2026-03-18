@@ -1,204 +1,377 @@
 package com.lj.aichatapp.controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lj.aichatapp.models.UserPreferences;
+import com.lj.aichatapp.infrastructure.preferences.PreferencesManager;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import com.lj.aichatapp.models.UserPreferences;
-import com.lj.aichatapp.utils.PreferencesManager;
+import org.kordamp.ikonli.javafx.FontIcon;
 
-import java.util.Arrays;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
-/**
- * Settings controller - small and focused.
- */
 public class SettingsController {
 
     @FXML
-    private ChoiceBox<String> themeChoice;
+    private VBox root;
     @FXML
-    private ChoiceBox<String> fontSizeChoice;
+    private ToggleButton themeToggle;
     @FXML
     private ComboBox<String> fontFamilyCombo;
     @FXML
+    private Spinner<Integer> fontSizeSpinner;
+    @FXML
+    private TextArea systemPromptArea;
+    @FXML
     private ChoiceBox<String> providerChoice;
     @FXML
-    private ChoiceBox<String> modelChoice;
+    private ListView<String> modelsList;
     @FXML
-    private TextField openRouterKey;
+    private TextField newModelField;
     @FXML
-    private TextField groqKey;
+    private Label currentModelLabel;
     @FXML
     private TextField ollamaHost;
+    @FXML
+    private PasswordField openRouterKeyField;
+    @FXML
+    private TextField openRouterKeyText;
+    @FXML
+    private ToggleButton openRouterToggle;
+    @FXML
+    private PasswordField groqKeyField;
+    @FXML
+    private TextField groqKeyText;
+    @FXML
+    private ToggleButton groqToggle;
+    @FXML
+    private VBox generalSection;
+    @FXML
+    private VBox providersSection;
+    @FXML
+    private VBox modelsSection;
 
     private UserPreferences prefs;
+    private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @FXML
     public void initialize() {
-        System.out.println("SettingsController.initialize() called");
+        // Populate font families
+        fontFamilyCombo.setItems(FXCollections.observableArrayList(Font.getFamilies()));
+
+        // Populate providers
+        providerChoice.setItems(FXCollections.observableArrayList("Ollama", "OpenRouter", "Groq"));
+        providerChoice.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> updateModelsList(newVal));
+
+        // Bind visibility of API key fields
+        bindApiKeyVisibility(openRouterKeyField, openRouterKeyText, openRouterToggle);
+        bindApiKeyVisibility(groqKeyField, groqKeyText, groqToggle);
         
-        // Initialize with safe null checks
-        initializeChoiceBox(themeChoice, Arrays.asList("light", "dark"));
-        initializeChoiceBox(fontSizeChoice, Arrays.asList("small", "medium", "large"));
-        initializeChoiceBox(providerChoice, Arrays.asList("Ollama", "OpenRouter", "Groq"));
+        // Set up theme toggle icons
+        themeToggle.selectedProperty().addListener((obs, oldVal, newVal) -> updateThemeToggleIcon(newVal));
         
-        // Initialize font family combo
-        if (fontFamilyCombo != null) {
-            try {
-                fontFamilyCombo.getItems().addAll(javafx.scene.text.Font.getFamilies());
-            } catch (Exception e) {
-                fontFamilyCombo.getItems().addAll("System", "Arial", "Verdana");
+        // Update current model label when selection changes
+        modelsList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                currentModelLabel.setText(newVal);
+            }
+        });
+        
+        // Initialize sidebar navigation
+        switchToGeneral();
+    }
+    
+    @FXML
+    private void switchToGeneral() {
+        generalSection.setVisible(true);
+        generalSection.setManaged(true);
+        providersSection.setVisible(false);
+        providersSection.setManaged(false);
+        modelsSection.setVisible(false);
+        modelsSection.setManaged(false);
+    }
+    
+    @FXML
+    private void switchToProviders() {
+        generalSection.setVisible(false);
+        generalSection.setManaged(false);
+        providersSection.setVisible(true);
+        providersSection.setManaged(true);
+        modelsSection.setVisible(false);
+        modelsSection.setManaged(false);
+    }
+    
+    @FXML
+    private void switchToModels() {
+        generalSection.setVisible(false);
+        generalSection.setManaged(false);
+        providersSection.setVisible(false);
+        providersSection.setManaged(false);
+        modelsSection.setVisible(true);
+        modelsSection.setManaged(true);
+    }
+
+    public void initWithPreferences(UserPreferences prefs) {
+        this.prefs = prefs;
+
+        // Set initial values
+        boolean isDark = "dark".equalsIgnoreCase(prefs.getTheme());
+        themeToggle.setSelected(isDark);
+        updateThemeToggleIcon(isDark);
+        applyThemeToWindow(isDark);
+        applyFontSettings();
+
+        // Correctly set the Integer value for the Spinner
+        fontSizeSpinner.getValueFactory().setValue(prefs.getFontSize());
+        
+        fontFamilyCombo.setValue(prefs.getFontFamily());
+        
+        // Set system prompt (read-only)
+        systemPromptArea.setText(prefs.getSystemPrompt());
+
+        providerChoice.setValue(prefs.getProvider());
+        ollamaHost.setText(prefs.getOllamaHost());
+        
+        // Load keys safely
+        String orKey = prefs.getProviderKeys().getOrDefault("openrouter", "");
+        openRouterKeyField.setText(orKey);
+        openRouterKeyText.setText(orKey);
+        
+        String gKey = prefs.getProviderKeys().getOrDefault("groq", "");
+        groqKeyField.setText(gKey);
+        groqKeyText.setText(gKey);
+        
+        // Initial population of models list
+        updateModelsList(prefs.getProvider());
+        
+        // Select the current model if it exists in the list
+        if (prefs.getModel() != null) {
+            currentModelLabel.setText(prefs.getModel());
+            if (modelsList.getItems().contains(prefs.getModel())) {
+                modelsList.getSelectionModel().select(prefs.getModel());
             }
         }
         
-        // Initialize model choice with empty list for now
-        if (modelChoice != null) {
-            modelChoice.getItems().clear();
-        }
-        
-        // Set default Ollama host
-        if (ollamaHost != null) {
-            ollamaHost.setText("http://localhost:11434");
+        // Auto-fetch models for Ollama if selected, to ensure we show what's installed
+        if ("Ollama".equalsIgnoreCase(prefs.getProvider())) {
+            fetchModels(true);
         }
     }
 
-    private void initializeChoiceBox(ChoiceBox<String> choiceBox, List<String> items) {
-        if (choiceBox != null) {
-            choiceBox.getItems().clear();
-            choiceBox.getItems().addAll(items);
-        }
+    private void updateModelsList(String provider) {
+        if (provider == null || prefs == null) return;
+        
+        String key = provider.toLowerCase();
+        List<String> models = prefs.getCustomModels().getOrDefault(key, new ArrayList<>());
+        modelsList.setItems(FXCollections.observableArrayList(models));
     }
 
-    public void initWithPreferences(UserPreferences p) {
-        System.out.println("SettingsController.initWithPreferences() called");
-        this.prefs = p;
-        
-        // Set values with null safety
-        setChoiceBoxValue(themeChoice, p.getTheme(), "light");
-        setChoiceBoxValue(fontSizeChoice, p.getFontSize(), "medium");
-        setComboBoxValue(fontFamilyCombo, p.getFontFamily(), "System");
-        
-        String provider = p.getProvider() != null ? p.getProvider() : "Ollama";
-        setChoiceBoxValue(providerChoice, provider, "Ollama");
-        
-        // Initialize models AFTER setting the provider
-        updateModelsForProvider(provider);
-        
-        String model = p.getModel() != null ? p.getModel() : "qwen3:4b";
-        setChoiceBoxValue(modelChoice, model, "qwen3:4b");
-        
-        if (openRouterKey != null) {
-            openRouterKey.setText(p.getProviderKeys().getOrDefault("openrouter", ""));
-        }
-        
-        if (groqKey != null) {
-            groqKey.setText(p.getProviderKeys().getOrDefault("groq", ""));
-        }
-        
-        String host = p.getOllamaHost() != null ? p.getOllamaHost() : "http://localhost:11434";
-        if (ollamaHost != null) {
-            ollamaHost.setText(host);
-        }
-
-        // Add listener for provider changes
-        if (providerChoice != null) {
-            providerChoice.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal != null) {
-                    updateModelsForProvider(newVal);
+    private void bindApiKeyVisibility(PasswordField passField, TextField textField, ToggleButton toggle) {
+        textField.managedProperty().bind(toggle.selectedProperty());
+        textField.visibleProperty().bind(toggle.selectedProperty());
+        passField.managedProperty().bind(toggle.selectedProperty().not());
+        passField.visibleProperty().bind(toggle.selectedProperty().not());
+        textField.textProperty().bindBidirectional(passField.textProperty());
+    }
+    
+    private void updateThemeToggleIcon(boolean isDark) {
+        FontIcon icon = new FontIcon(isDark ? "fas-moon" : "fas-sun");
+        icon.setIconSize(16);
+        themeToggle.setGraphic(icon);
+        applyThemeToWindow(isDark);
+    }
+    
+    private void applyThemeToWindow(boolean isDark) {
+        if (root.getScene() != null) {
+            if (isDark) {
+                if (!root.getScene().getRoot().getStyleClass().contains("dark")) {
+                    root.getScene().getRoot().getStyleClass().add("dark");
                 }
-            });
-        }
-    }
-
-    private void setChoiceBoxValue(ChoiceBox<String> choiceBox, String value, String defaultValue) {
-        if (choiceBox != null) {
-            if (value != null && choiceBox.getItems().contains(value)) {
-                choiceBox.setValue(value);
             } else {
-                choiceBox.setValue(defaultValue);
+                root.getScene().getRoot().getStyleClass().remove("dark");
             }
         }
     }
-
-    private void setComboBoxValue(ComboBox<String> comboBox, String value, String defaultValue) {
-        if (comboBox != null) {
-            if (value != null && comboBox.getItems().contains(value)) {
-                comboBox.setValue(value);
-            } else if (!comboBox.getItems().isEmpty()) {
-                comboBox.setValue(comboBox.getItems().get(0));
-            } else {
-                comboBox.setValue(defaultValue);
+    
+    private void applyFontSettings() {
+        if (prefs != null) {
+            String style = String.format("-fx-font-family: '%s'; -fx-font-size: %dpx;", prefs.getFontFamily(), prefs.getFontSize());
+            root.setStyle(style);
+        }
+    }
+    
+    @FXML
+    private void onAddModel() {
+        String newModel = newModelField.getText();
+        if (newModel != null && !newModel.isBlank()) {
+            String provider = providerChoice.getValue().toLowerCase();
+            List<String> models = prefs.getCustomModels().computeIfAbsent(provider, k -> new ArrayList<>());
+            
+            if (!models.contains(newModel)) {
+                models.add(newModel);
+                updateModelsList(providerChoice.getValue());
+                modelsList.getSelectionModel().select(newModel);
+                newModelField.clear();
             }
         }
     }
-
-    private void updateModelsForProvider(String provider) {
-        if (modelChoice == null) {
-            System.out.println("modelChoice is null, cannot update models");
-            return;
-        }
-        
-        List<String> models = getModelsForProvider(provider);
-        System.out.println("Updating models for provider: " + provider + " -> " + models);
-        
-        modelChoice.getItems().clear();
-        modelChoice.getItems().addAll(models);
-        
-        if (!models.isEmpty()) {
-            modelChoice.setValue(models.get(0));
+    
+    @FXML
+    private void onDeleteModel() {
+        String selected = modelsList.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            String provider = providerChoice.getValue().toLowerCase();
+            List<String> models = prefs.getCustomModels().get(provider);
+            if (models != null) {
+                models.remove(selected);
+                updateModelsList(providerChoice.getValue());
+            }
         }
     }
-
-    private List<String> getModelsForProvider(String provider) {
-        if (provider == null) {
-            return Arrays.asList("qwen3:4b", "gemma3:1b");
-        }
+    
+    @FXML
+    private void onFetchModels() {
+        fetchModels(false);
+    }
+    
+    private void fetchModels(boolean silent) {
+        String provider = providerChoice.getValue();
+        if (provider == null) return;
         
-        switch (provider.toLowerCase()) {
-            case "openrouter":
-                return Arrays.asList("x-ai/grok-4-fast:free", "deepseek/deepseek-chat-v3.1:free","nvidia/nemotron-nano-9b-v2:free","openai/gpt-oss-20b:free");
-            case "groq":
-                return Arrays.asList("gemma2-9b-it", "lama3-8b-8192","whisper-large-v3-turbo","llama-3.1-8b-instant");
-            case "ollama":
-            default:
-                return Arrays.asList("qwen3:4b", "gemma3:1b");
-        }
+        CompletableFuture.runAsync(() -> {
+            try {
+                List<String> fetchedModels = new ArrayList<>();
+                String url = "";
+                String authHeader = null;
+                
+                switch (provider.toLowerCase()) {
+                    case "ollama":
+                        url = (ollamaHost.getText().endsWith("/") ? ollamaHost.getText() : ollamaHost.getText() + "/") + "api/tags";
+                        break;
+                    case "openrouter":
+                        url = "https://openrouter.ai/api/v1/models";
+                        break;
+                    case "groq":
+                        url = "https://api.groq.com/openai/v1/models";
+                        authHeader = "Bearer " + groqKeyField.getText();
+                        break;
+                }
+                
+                if (url.isEmpty()) return;
+                
+                HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create(url));
+                if (authHeader != null) {
+                    builder.header("Authorization", authHeader);
+                }
+                
+                HttpResponse<String> response = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+                
+                if (response.statusCode() == 200) {
+                    JsonNode jsonRoot = objectMapper.readTree(response.body());
+                    if (provider.equalsIgnoreCase("ollama")) {
+                        if (jsonRoot.has("models")) {
+                            jsonRoot.get("models").forEach(node -> fetchedModels.add(node.get("name").asText()));
+                        }
+                    } else {
+                        // OpenRouter and Groq follow OpenAI format
+                        if (jsonRoot.has("data")) {
+                            jsonRoot.get("data").forEach(node -> fetchedModels.add(node.get("id").asText()));
+                        }
+                    }
+                    
+                    Platform.runLater(() -> {
+                        if (!fetchedModels.isEmpty()) {
+                            String pKey = provider.toLowerCase();
+                            List<String> currentModels = prefs.getCustomModels().computeIfAbsent(pKey, k -> new ArrayList<>());
+                            
+                            // For Ollama, we want to REPLACE the list to ensure it matches installed models exactly
+                            if (pKey.equals("ollama")) {
+                                currentModels.clear();
+                                currentModels.addAll(fetchedModels);
+                            } else {
+                                // For others, merge
+                                for (String m : fetchedModels) {
+                                    if (!currentModels.contains(m)) {
+                                        currentModels.add(m);
+                                    }
+                                }
+                            }
+                            
+                            updateModelsList(provider);
+                            if (!silent) {
+                                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Successfully fetched " + fetchedModels.size() + " models.");
+                                alert.initOwner(root.getScene().getWindow());
+                                alert.show();
+                            }
+                        }
+                    });
+                } else {
+                    if (!silent) {
+                        Platform.runLater(() -> {
+                            Alert alert = new Alert(Alert.AlertType.ERROR, "Failed to fetch models. Status: " + response.statusCode());
+                            alert.initOwner(root.getScene().getWindow());
+                            alert.show();
+                        });
+                    }
+                }
+                
+            } catch (Exception e) {
+                if (!silent) {
+                    Platform.runLater(() -> {
+                        Alert alert = new Alert(Alert.AlertType.ERROR, "Error fetching models: " + e.getMessage());
+                        alert.initOwner(root.getScene().getWindow());
+                        alert.show();
+                    });
+                }
+            }
+        });
     }
 
     @FXML
-    public void onSave() {
-        if (prefs == null) {
-            System.out.println("Preferences is null, cannot save");
-            return;
-        }
-        
-        prefs.setTheme(themeChoice.getValue());
-        prefs.setFontSize(fontSizeChoice.getValue());
+    private void onSave() {
+        prefs.setTheme(themeToggle.isSelected() ? "dark" : "light");
+        prefs.setFontSize(fontSizeSpinner.getValue());
         prefs.setFontFamily(fontFamilyCombo.getValue());
         prefs.setProvider(providerChoice.getValue());
-        prefs.setModel(modelChoice.getValue());
-        prefs.getProviderKeys().put("openrouter", openRouterKey.getText());
-        prefs.getProviderKeys().put("groq", groqKey.getText());
         
-        String host = ollamaHost.getText();
-        if (host == null || host.trim().isEmpty()) {
-            host = "http://localhost:11434";
+        // Save selected model
+        String selectedModel = modelsList.getSelectionModel().getSelectedItem();
+        if (selectedModel != null) {
+            prefs.setModel(selectedModel);
         }
-        prefs.setOllamaHost(host);
+
+        prefs.setOllamaHost(ollamaHost.getText());
+        
+        // Get key from the field, ensuring we get the latest value
+        String orKey = openRouterKeyField.getText();
+        String gKey = groqKeyField.getText();
+        
+        prefs.getProviderKeys().put("openrouter", orKey);
+        prefs.getProviderKeys().put("groq", gKey);
 
         PreferencesManager.savePreferences(prefs);
         closeWindow();
     }
 
     @FXML
-    public void onCancel() {
+    private void onCancel() {
         closeWindow();
     }
 
     private void closeWindow() {
-        if (themeChoice != null && themeChoice.getScene() != null) {
-            Stage stage = (Stage) themeChoice.getScene().getWindow();
-            stage.close();
-        }
+        Stage stage = (Stage) fontFamilyCombo.getScene().getWindow();
+        stage.close();
     }
 }

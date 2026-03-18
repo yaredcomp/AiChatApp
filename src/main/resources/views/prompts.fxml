@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox fx:id="root" spacing="0" styleClass="prompts-root" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.lj.aichatapp.controllers.PromptsController" prefWidth="850" prefHeight="550">
+    <padding>
+        <Insets bottom="0" left="0" right="0" top="0" />
+    </padding>
+    
+    <HBox styleClass="prompts-header" alignment="CENTER_LEFT">
+        <padding>
+            <Insets top="20" bottom="20" left="24" right="24"/>
+        </padding>
+        <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+            <FontIcon iconLiteral="fas-book-open" iconSize="22" styleClass="prompts-header-icon"/>
+            <Label text="Prompt Library" styleClass="prompts-title"/>
+        </HBox>
+    </HBox>
+    
+    <HBox spacing="0" VBox.vgrow="ALWAYS">
+        <VBox styleClass="prompts-list-panel" minWidth="280" maxWidth="350">
+            <padding>
+                <Insets top="0" bottom="16" left="16" right="12"/>
+            </padding>
+            
+            <VBox spacing="12">
+                <TextField fx:id="searchField" promptText="Search prompts..." styleClass="prompts-search-field"/>
+                
+                <ListView fx:id="promptsList" VBox.vgrow="ALWAYS" styleClass="prompts-list-view"/>
+                
+                <Button onAction="#onNewPrompt" maxWidth="Infinity" styleClass="new-chat-btn">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-plus" iconSize="14"/>
+                    </graphic>
+                    <text>Create New Prompt</text>
+                </Button>
+            </VBox>
+        </VBox>
+        
+        <Separator orientation="VERTICAL" styleClass="prompts-separator"/>
+        
+        <VBox HBox.hgrow="ALWAYS">
+            <padding>
+                <Insets top="20" bottom="20" left="24" right="24"/>
+            </padding>
+            
+            <VBox spacing="16" VBox.vgrow="ALWAYS">
+                <VBox spacing="8">
+                    <Label text="Title" styleClass="input-label"/>
+                    <TextField fx:id="titleField" promptText="Enter prompt title..." styleClass="prompts-text-field"/>
+                </VBox>
+                
+                <VBox spacing="8" VBox.vgrow="ALWAYS">
+                    <HBox alignment="CENTER_LEFT">
+                        <Label text="Content" styleClass="input-label" HBox.hgrow="ALWAYS"/>
+                        <Label text="Supports Markdown" styleClass="markdown-hint"/>
+                    </HBox>
+                    <TextArea fx:id="contentArea" promptText="Write your prompt here...
+
+You can use {{variable}} syntax for dynamic content." wrapText="true" VBox.vgrow="ALWAYS" styleClass="prompts-text-area"/>
+                </VBox>
+                
+                <HBox spacing="12" alignment="CENTER_RIGHT">
+                    <Button onAction="#onDelete" text="Delete" styleClass="danger-button" visible="false" managed="false" id="deleteBtn">
+                        <graphic><FontIcon iconLiteral="fas-trash-alt" iconSize="14"/></graphic>
+                    </Button>
+                    <Button onAction="#onUse" text="Use Prompt" styleClass="use-button">
+                        <graphic><FontIcon iconLiteral="fas-paper-plane" iconSize="14"/></graphic>
+                    </Button>
+                    <Button onAction="#onSave" text="Save" styleClass="save-button">
+                        <graphic><FontIcon iconLiteral="fas-save" iconSize="14" iconColor="white"/></graphic>
+                    </Button>
+                </HBox>
+            </VBox>
+        </VBox>
+    </HBox>
+</VBox>

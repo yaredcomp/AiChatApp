@@ -29,6 +29,10 @@ public class Message {
         return id;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public MessageRole getRole() {
         return role;
     }
