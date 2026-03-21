@@ -21,6 +21,7 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import java.net.URL;
 import java.util.function.Consumer;
 
 public class ModernAlert {
@@ -223,8 +224,11 @@ public class ModernAlert {
     }
     
     private static void applyTheme(Scene scene) {
-        scene.getStylesheets().add(ModernAlert.class.getResource("/css/style.css").toExternalForm());
-        scene.getStylesheets().add(ModernAlert.class.getResource("/css/theme.css").toExternalForm());
+        URL styleCss = ModernAlert.class.getResource("/css/style.css");
+        URL themeCss = ModernAlert.class.getResource("/css/theme.css");
+        
+        if (styleCss != null) scene.getStylesheets().add(styleCss.toExternalForm());
+        if (themeCss != null) scene.getStylesheets().add(themeCss.toExternalForm());
         
         // Check current theme
         if ("dark".equalsIgnoreCase(AppContext.getInstance().getPreferences().getTheme())) {

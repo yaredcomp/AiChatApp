@@ -19,6 +19,7 @@ module com.lj.aichatapp {
     exports com.lj.aichatapp.service;
     exports com.lj.aichatapp.service.ai;
     exports com.lj.aichatapp.service.ai.providers;
+    exports com.lj.aichatapp.service.local;
     exports com.lj.aichatapp.utils;
     exports com.lj.aichatapp.repository;
     exports com.lj.aichatapp.repository.impl;

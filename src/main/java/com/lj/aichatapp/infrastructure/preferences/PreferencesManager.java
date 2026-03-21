@@ -3,6 +3,7 @@ package com.lj.aichatapp.infrastructure.preferences;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.lj.aichatapp.models.UserPreferences;
+import com.lj.aichatapp.utils.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +27,9 @@ public class PreferencesManager {
     public static void ensureAppDirectory() {
         File dir = getAppDirectory().toFile();
         if (!dir.exists()) {
-            dir.mkdirs();
+            if (!dir.mkdirs()) {
+                Logger.error("Failed to create application directory: " + dir.getAbsolutePath(), null);
+            }
         }
     }
 

@@ -133,8 +133,9 @@ public class ResponseFormatter {
         VBox container = new VBox(12);
         container.getStyleClass().add("step-content");
 
+        // Removed unnecessary non-capturing groups
         Pattern stepPattern = Pattern.compile(
-            "(?i)(step\\s*\\d+[:\\.]?\\s*|\\d+[\\.\\)]\\s*)(.+?)(?=(?:step\\s*\\d+)|(?:\\n\\d+[\\.\\)])|$)",
+            "(?i)(step\\s*\\d+[:\\.]?\\s*|\\d+[\\.\\)]\\s*)(.+?)(?=step\\s*\\d+|\\n\\d+[\\.\\)]|$)",
             Pattern.DOTALL
         );
 

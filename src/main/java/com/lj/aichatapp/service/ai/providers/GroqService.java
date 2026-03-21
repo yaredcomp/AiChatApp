@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.lj.aichatapp.models.Message;
 import com.lj.aichatapp.models.UserPreferences;
 import com.lj.aichatapp.service.ai.AIService;
+import com.lj.aichatapp.utils.Logger;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -90,6 +91,7 @@ public class GroqService implements AIService {
                                         }
                                     }
                                 } catch (JsonProcessingException e) {
+                                    Logger.error("Error parsing stream line: " + line, e);
                                 }
                             }
                         });

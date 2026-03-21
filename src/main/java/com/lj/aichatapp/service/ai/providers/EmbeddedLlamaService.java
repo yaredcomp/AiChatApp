@@ -10,10 +10,11 @@ import com.lj.aichatapp.models.MessageRole;
 import com.lj.aichatapp.models.UserPreferences;
 import com.lj.aichatapp.service.ai.AIService;
 import com.lj.aichatapp.service.local.LlamaServerManager;
-import com.lj.aichatapp.utils.Logger;
+
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -89,10 +90,10 @@ public class EmbeddedLlamaService implements AIService {
 
             if (lastRole != null && lastRole.equals(role)) {
                 // Merge with previous message to enforce alternation
-                if (lastNode != null) {
-                    String newContent = lastNode.get("content").asText() + "\n\n" + content;
-                    lastNode.put("content", newContent);
-                }
+                // lastNode is guaranteed to be non-null here because lastRole is not null
+                // which means we have entered the 'else' block at least once.
+                String newContent = lastNode.get("content").asText() + "\n\n" + content;
+                lastNode.put("content", newContent);
             } else {
                 // Add new message
                 lastNode = messagesNode.addObject();
@@ -153,8 +154,8 @@ public class EmbeddedLlamaService implements AIService {
         client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream())
                 .thenAccept(response -> {
                     if (response.statusCode() != 200) {
-                        try {
-                            String errorBody = new String(response.body().readAllBytes(), StandardCharsets.UTF_8);
+                        try (InputStream is = response.body()) {
+                            String errorBody = new String(is.readAllBytes(), StandardCharsets.UTF_8);
                             future.completeExceptionally(new RuntimeException("Local Llama Error: " + response.statusCode() + " - " + errorBody));
                         } catch (IOException e) {
                             future.completeExceptionally(new RuntimeException("Local Llama Error: " + response.statusCode()));
@@ -162,7 +163,8 @@ public class EmbeddedLlamaService implements AIService {
                         return;
                     }
 
-                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(response.body(), StandardCharsets.UTF_8))) {
+                    try (InputStream is = response.body();
+                         BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
                         String line;
                         while ((line = reader.readLine()) != null) {
                             if (line.startsWith("data: ")) {

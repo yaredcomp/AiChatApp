@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.lj.aichatapp.models.Message;
 import com.lj.aichatapp.models.UserPreferences;
 import com.lj.aichatapp.service.ai.AIService;
+import com.lj.aichatapp.utils.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class OllamaService implements AIService {
 
     private final HttpClient http;
     private final String baseUrl;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
 
     public OllamaService(UserPreferences prefs) {
         this.http = HttpClient.newHttpClient();
@@ -37,6 +38,7 @@ public class OllamaService implements AIService {
         } else {
             this.baseUrl = host;
         }
+        this.mapper = new ObjectMapper();
         this.mapper.registerModule(new JavaTimeModule());
     }
 
@@ -78,6 +80,7 @@ public class OllamaService implements AIService {
                         try {
                             is.close();
                         } catch (IOException e) {
+                            Logger.error("Error closing stream", e);
                         }
                     }
                 }
@@ -93,6 +96,7 @@ public class OllamaService implements AIService {
                                 try {
                                     is.close();
                                 } catch (IOException e) {
+                                    Logger.error("Error closing stream", e);
                                 }
                                 return;
                             }
@@ -119,15 +123,17 @@ public class OllamaService implements AIService {
                                             }
 
                                             if (!chunk.isEmpty()) {
-                                                fullResponse.append(chunk);
-                                                onChunkReceived.accept(chunk);
+                                                String finalChunk = chunk;
+                                                // Assuming onChunkReceived handles UI updates or is thread-safe
+                                                onChunkReceived.accept(finalChunk);
+                                                fullResponse.append(finalChunk);
                                             }
 
                                             if (node.has("done") && node.get("done").asBoolean()) {
                                                 break;
                                             }
                                         } catch (Exception e) {
-                                            System.err.println("Error parsing stream line: " + line);
+                                            Logger.error("Error parsing stream line: " + line, e);
                                         }
                                     }
 
@@ -141,8 +147,8 @@ public class OllamaService implements AIService {
                                 }
                             });
                         } else {
-                            try (InputStream is = resp.body()) {
-                                String errorBody = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                            try (InputStream errorStream = resp.body()) {
+                                String errorBody = new String(errorStream.readAllBytes(), StandardCharsets.UTF_8);
                                 finalFuture.completeExceptionally(new RuntimeException("Ollama error: " + resp.statusCode() + " - " + errorBody));
                             } catch (IOException e) {
                                 finalFuture.completeExceptionally(new RuntimeException("Ollama error: " + resp.statusCode()));
@@ -202,6 +208,9 @@ public class OllamaService implements AIService {
                     throw new RuntimeException("Ollama error: " + resp.statusCode() + " " + resp.body());
                 }
             } catch (IOException | InterruptedException ex) {
+                if (ex instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
                 throw new RuntimeException("Failed to communicate with Ollama: " + ex.getMessage(), ex);
             }
         });

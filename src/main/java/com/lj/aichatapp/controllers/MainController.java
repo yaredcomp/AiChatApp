@@ -25,6 +25,7 @@ import javafx.util.Duration;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -545,8 +546,11 @@ public class MainController {
             settingsStage.initOwner(stage);
 
             Scene scene = new Scene(settingsPane);
-            scene.getStylesheets().add(getClass().getResource("/css/theme.css").toExternalForm());
-            scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+            URL themeCss = getClass().getResource("/css/theme.css");
+            URL styleCss = getClass().getResource("/css/style.css");
+            
+            if (themeCss != null) scene.getStylesheets().add(themeCss.toExternalForm());
+            if (styleCss != null) scene.getStylesheets().add(styleCss.toExternalForm());
             
             if (root.getScene().getRoot().getStyleClass().contains("dark")) {
                 scene.getRoot().getStyleClass().add("dark");
@@ -582,8 +586,11 @@ public class MainController {
             promptsStage.initOwner(stage);
 
             Scene scene = new Scene(promptsPane);
-            scene.getStylesheets().add(getClass().getResource("/css/theme.css").toExternalForm());
-            scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+            URL themeCss = getClass().getResource("/css/theme.css");
+            URL styleCss = getClass().getResource("/css/style.css");
+            
+            if (themeCss != null) scene.getStylesheets().add(themeCss.toExternalForm());
+            if (styleCss != null) scene.getStylesheets().add(styleCss.toExternalForm());
             
             if (root.getScene().getRoot().getStyleClass().contains("dark")) {
                 scene.getRoot().getStyleClass().add("dark");

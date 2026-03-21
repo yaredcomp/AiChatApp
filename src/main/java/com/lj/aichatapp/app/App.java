@@ -11,6 +11,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
+import java.net.URL;
+
 public class App extends Application {
 
     @Override
@@ -31,8 +33,11 @@ public class App extends Application {
 
             Scene scene = new Scene(root);
 
-            scene.getStylesheets().add(getClass().getResource("/css/theme.css").toExternalForm());
-            scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+            URL themeCss = getClass().getResource("/css/theme.css");
+            URL styleCss = getClass().getResource("/css/style.css");
+
+            if (themeCss != null) scene.getStylesheets().add(themeCss.toExternalForm());
+            if (styleCss != null) scene.getStylesheets().add(styleCss.toExternalForm());
 
             if ("dark".equalsIgnoreCase(prefs.getTheme())) {
                 scene.getRoot().getStyleClass().add("dark");

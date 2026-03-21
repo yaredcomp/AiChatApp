@@ -75,10 +75,14 @@ public class FxUtils {
             content.putString(text);
             Clipboard.getSystemClipboard().setContent(content);
             copyIcon.setIconLiteral("fas-check");
-            javafx.application.Platform.runLater(() -> {
-                try { Thread.sleep(1000); } catch (Exception ex) {}
-                copyIcon.setIconLiteral("fas-copy");
-            });
+            new Thread(() -> {
+                try {
+                    Thread.sleep(1000);
+                    Platform.runLater(() -> copyIcon.setIconLiteral("fas-copy"));
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+            }).start();
         });
         
         headerRow.getChildren().addAll(avatar, nameLabel, spacer, timestamp, copyBtn);
@@ -168,7 +172,7 @@ public class FxUtils {
         }
 
         // If we ended while still in a table
-        if (inTable && !tableBuffer.isEmpty()) {
+        if (inTable) {
             container.getChildren().add(createTable(tableBuffer));
         }
     }
@@ -356,7 +360,9 @@ public class FxUtils {
                 try {
                     Thread.sleep(2000);
                     Platform.runLater(() -> copyBtn.setText("Copy"));
-                } catch (InterruptedException ex) { }
+                } catch (InterruptedException ex) { 
+                    Thread.currentThread().interrupt();
+                }
             }).start();
         });
         
@@ -447,10 +453,14 @@ public class FxUtils {
             content.putString(text);
             Clipboard.getSystemClipboard().setContent(content);
             copyIcon.setIconLiteral("fas-check");
-            Platform.runLater(() -> {
-                try { Thread.sleep(1000); } catch (Exception ex) {}
-                copyIcon.setIconLiteral("fas-copy");
-            });
+            new Thread(() -> {
+                try {
+                    Thread.sleep(1000);
+                    Platform.runLater(() -> copyIcon.setIconLiteral("fas-copy"));
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+            }).start();
         });
         
         headerRow.getChildren().addAll(avatar, nameLabel, spacer, timestamp, copyBtn);

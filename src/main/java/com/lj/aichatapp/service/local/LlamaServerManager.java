@@ -2,7 +2,6 @@ package com.lj.aichatapp.service.local;
 
 import com.lj.aichatapp.utils.Logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -118,8 +117,6 @@ public class LlamaServerManager {
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
             serverExeName += ".exe";
             copyWindowsBinaries(binDir);
-        } else {
-            // Placeholder for Linux/Mac
         }
         
         Path serverExePath = binDir.resolve(serverExeName);
@@ -128,7 +125,9 @@ public class LlamaServerManager {
         }
 
         if (!System.getProperty("os.name").toLowerCase().contains("win")) {
-            serverExePath.toFile().setExecutable(true);
+            if (!serverExePath.toFile().setExecutable(true)) {
+                Logger.warn("Could not set executable permission for " + serverExePath);
+            }
         }
 
         ProcessBuilder pb = new ProcessBuilder(
@@ -153,7 +152,9 @@ public class LlamaServerManager {
                     String line = sc.nextLine();
                     Logger.info("[LlamaServer] " + line);
                 }
-            } catch (Exception e) { }
+            } catch (Exception e) {
+                Logger.error("Error reading server process output", e);
+            }
         }, "LlamaServer-Log-Reader").start();
         
         Runtime.getRuntime().addShutdownHook(new Thread(this::stopServer));
@@ -191,15 +192,14 @@ public class LlamaServerManager {
                 int code = connection.getResponseCode();
                 if (code == 200) {
                     return; // Ready!
-                } else if (code == 503) {
-                    // Still loading, keep waiting
                 }
+                // 503 means still loading, so we just continue the loop
             } catch (IOException e) {
                 // Connection failed (refused), likely starting up
             }
 
             try {
-                Thread.sleep(500);
+                TimeUnit.MILLISECONDS.sleep(500);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new IOException("Interrupted while waiting for server");
