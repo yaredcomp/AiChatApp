@@ -3,6 +3,7 @@ package com.lj.aichatapp.service.ai;
 import com.lj.aichatapp.models.Message;
 import com.lj.aichatapp.models.MessageRole;
 import com.lj.aichatapp.models.UserPreferences;
+import com.lj.aichatapp.service.ai.providers.EmbeddedLlamaService;
 import com.lj.aichatapp.service.ai.providers.GroqService;
 import com.lj.aichatapp.service.ai.providers.OllamaService;
 import com.lj.aichatapp.service.ai.providers.OpenRouterService;
@@ -35,6 +36,8 @@ public class AIServiceManager {
                 return new OpenRouterService(prefs);
             case "groq":
                 return new GroqService(prefs);
+            case "local lm":
+                return new EmbeddedLlamaService();
             default:
                 return new OpenRouterService(prefs);
         }
@@ -52,6 +55,9 @@ public class AIServiceManager {
                     break;
                 case "openrouter":
                     actualModel = "google/gemma-7b-it:free";
+                    break;
+                case "local lm":
+                    actualModel = "local-model";
                     break;
                 case "ollama":
                 default:

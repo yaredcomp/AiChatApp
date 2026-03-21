@@ -4,6 +4,7 @@ import com.lj.aichatapp.context.AppContext;
 import com.lj.aichatapp.models.Prompt;
 import com.lj.aichatapp.models.UserPreferences;
 import com.lj.aichatapp.service.PromptService;
+import com.lj.aichatapp.utils.ModernAlert;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -35,7 +36,6 @@ public class PromptsController {
     private FilteredList<Prompt> filteredPrompts;
     private PromptService promptService;
 
-    @FXML
     public void initialize() {
         this.promptService = AppContext.getInstance().getPromptService();
         refreshList();
@@ -78,24 +78,26 @@ public class PromptsController {
                     HBox.setHgrow(spacer, Priority.ALWAYS);
                     
                     Button delBtn = new Button();
-                    delBtn.getStyleClass().add("icon-button");
+                    delBtn.getStyleClass().add("delete-chat-btn");
                     FontIcon trashIcon = new FontIcon("fas-trash");
                     trashIcon.setIconSize(12);
                     trashIcon.setIconColor(javafx.scene.paint.Color.GRAY);
                     delBtn.setGraphic(trashIcon);
-                    
+                    delBtn.setTooltip(new Tooltip("Delete"));
+
                     delBtn.setOnAction(e -> {
-                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Delete prompt '" + item.getTitle() + "'?", ButtonType.YES, ButtonType.NO);
-                        alert.initOwner(root.getScene().getWindow());
-                        alert.showAndWait();
-                        
-                        if (alert.getResult() == ButtonType.YES) {
-                            promptService.deletePrompt(item.getId());
-                            refreshList();
-                            if (currentPrompt != null && currentPrompt.getId() == item.getId()) {
-                                onNewPrompt();
-                            }
-                        }
+                        e.consume();
+                        ModernAlert.confirmDanger("Delete Prompt", "Are you sure you want to delete '" + item.getTitle() + "'?",
+                            delBtn.getScene().getWindow(),
+                            confirmed -> {
+                                if (confirmed) {
+                                    promptService.deletePrompt(item.getId());
+                                    refreshList();
+                                    if (currentPrompt != null && currentPrompt.getId() == item.getId()) {
+                                        onNewPrompt();
+                                    }
+                                }
+                            });
                     });
                     
                     delBtn.setVisible(false);
@@ -164,9 +166,7 @@ public class PromptsController {
         String text = contentArea.getText();
         
         if (title == null || title.isBlank() || text == null || text.isBlank()) {
-            Alert alert = new Alert(Alert.AlertType.WARNING, "Please enter both a title and content.", ButtonType.OK);
-            alert.initOwner(root.getScene().getWindow());
-            alert.showAndWait();
+            ModernAlert.info("Validation Error", "Please enter both a title and content.", root.getScene().getWindow());
             return;
         }
         
@@ -202,19 +202,18 @@ public class PromptsController {
             return;
         }
         
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, 
+        ModernAlert.confirmDanger("Delete Prompt",
             "Are you sure you want to delete \"" + selected.getTitle() + "\"?", 
-            ButtonType.YES, ButtonType.NO);
-        confirm.initOwner(root.getScene().getWindow());
-        confirm.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.YES) {
-                promptService.deletePrompt(selected.getId());
-                refreshList();
-                titleField.clear();
-                contentArea.clear();
-                currentPrompt = null;
-            }
-        });
+            root.getScene().getWindow(),
+            confirmed -> {
+                if (confirmed) {
+                    promptService.deletePrompt(selected.getId());
+                    refreshList();
+                    titleField.clear();
+                    contentArea.clear();
+                    currentPrompt = null;
+                }
+            });
     }
     
     private void closeWindow() {

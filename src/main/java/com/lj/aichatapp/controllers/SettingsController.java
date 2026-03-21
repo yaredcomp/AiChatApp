@@ -2,23 +2,42 @@ package com.lj.aichatapp.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lj.aichatapp.context.AppContext;
 import com.lj.aichatapp.models.UserPreferences;
 import com.lj.aichatapp.infrastructure.preferences.PreferencesManager;
+import com.lj.aichatapp.service.local.LlamaServerManager;
+import com.lj.aichatapp.utils.ModernAlert;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class SettingsController {
@@ -41,8 +60,22 @@ public class SettingsController {
     private TextField newModelField;
     @FXML
     private Label currentModelLabel;
+    
+    // Config Sections
+    @FXML
+    private VBox ollamaConfigBox;
+    @FXML
+    private VBox localLlamaConfigBox;
+    @FXML
+    private VBox openRouterConfigBox;
+    @FXML
+    private VBox groqConfigBox;
+    
+    // Fields
     @FXML
     private TextField ollamaHost;
+    @FXML
+    private TextField localModelPathField;
     @FXML
     private PasswordField openRouterKeyField;
     @FXML
@@ -55,6 +88,7 @@ public class SettingsController {
     private TextField groqKeyText;
     @FXML
     private ToggleButton groqToggle;
+    
     @FXML
     private VBox generalSection;
     @FXML
@@ -72,8 +106,11 @@ public class SettingsController {
         fontFamilyCombo.setItems(FXCollections.observableArrayList(Font.getFamilies()));
 
         // Populate providers
-        providerChoice.setItems(FXCollections.observableArrayList("Ollama", "OpenRouter", "Groq"));
-        providerChoice.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> updateModelsList(newVal));
+        providerChoice.setItems(FXCollections.observableArrayList("Ollama", "Local LM", "OpenRouter", "Groq"));
+        providerChoice.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            updateModelsList(newVal);
+            updateConfigVisibility(newVal);
+        });
 
         // Bind visibility of API key fields
         bindApiKeyVisibility(openRouterKeyField, openRouterKeyText, openRouterToggle);
@@ -86,6 +123,11 @@ public class SettingsController {
         modelsList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 currentModelLabel.setText(newVal);
+                // Also update local path field if in local llama mode
+                if ("Local LM".equalsIgnoreCase(providerChoice.getValue())) {
+                    LlamaServerManager manager = AppContext.getInstance().getLlamaServerManager();
+                    localModelPathField.setText(manager.getModelsDir().resolve(newVal).toString());
+                }
             }
         });
         
@@ -142,6 +184,8 @@ public class SettingsController {
         systemPromptArea.setText(prefs.getSystemPrompt());
 
         providerChoice.setValue(prefs.getProvider());
+        updateConfigVisibility(prefs.getProvider());
+        
         ollamaHost.setText(prefs.getOllamaHost());
         
         // Load keys safely
@@ -158,15 +202,41 @@ public class SettingsController {
         
         // Select the current model if it exists in the list
         if (prefs.getModel() != null) {
-            currentModelLabel.setText(prefs.getModel());
-            if (modelsList.getItems().contains(prefs.getModel())) {
-                modelsList.getSelectionModel().select(prefs.getModel());
+            String currentModel = prefs.getModel();
+            currentModelLabel.setText(currentModel);
+            if (modelsList.getItems().contains(currentModel)) {
+                modelsList.getSelectionModel().select(currentModel);
             }
         }
         
-        // Auto-fetch models for Ollama if selected, to ensure we show what's installed
-        if ("Ollama".equalsIgnoreCase(prefs.getProvider())) {
+        // Auto-fetch models
+        if ("Ollama".equalsIgnoreCase(prefs.getProvider()) || "Local LM".equalsIgnoreCase(prefs.getProvider())) {
             fetchModels(true);
+        }
+    }
+
+    private void updateConfigVisibility(String provider) {
+        if (provider == null) return;
+        String p = provider.toLowerCase();
+        
+        if (ollamaConfigBox != null) {
+            ollamaConfigBox.setVisible("ollama".equals(p));
+            ollamaConfigBox.setManaged("ollama".equals(p));
+        }
+        
+        if (localLlamaConfigBox != null) {
+            localLlamaConfigBox.setVisible("local lm".equals(p));
+            localLlamaConfigBox.setManaged("local lm".equals(p));
+        }
+        
+        if (openRouterConfigBox != null) {
+            openRouterConfigBox.setVisible("openrouter".equals(p));
+            openRouterConfigBox.setManaged("openrouter".equals(p));
+        }
+        
+        if (groqConfigBox != null) {
+            groqConfigBox.setVisible("groq".equals(p));
+            groqConfigBox.setManaged("groq".equals(p));
         }
     }
 
@@ -213,7 +283,74 @@ public class SettingsController {
     }
     
     @FXML
+    private void onBrowseModel() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select GGUF Model");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("GGUF Models", "*.gguf"));
+        
+        File file = fileChooser.showOpenDialog(root.getScene().getWindow());
+        if (file != null) {
+            String defaultName = file.getName().replace(".gguf", "");
+            
+            // Replaced native TextInputDialog with ModernAlert.askInput
+            ModernAlert.askInput("Model Name", "Enter a name for this model (optional):", defaultName, root.getScene().getWindow(), modelName -> {
+                 String finalName = (modelName == null || modelName.isBlank()) ? file.getName() : modelName;
+                 importLocalModelWithProgress(file, finalName);
+            });
+        }
+    }
+    
+    private void importLocalModelWithProgress(File sourceFile, String modelName) {
+        LlamaServerManager manager = AppContext.getInstance().getLlamaServerManager();
+        Path destDir = manager.getModelsDir();
+        Path destPath = destDir.resolve(sourceFile.getName()); 
+        
+        // Replaced custom Dialog with ModernAlert.showProgress
+        Task<Void> copyTask = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                long totalBytes = sourceFile.length();
+                try (InputStream in = new FileInputStream(sourceFile);
+                     OutputStream out = new FileOutputStream(destPath.toFile())) {
+                    
+                    byte[] buffer = new byte[8192];
+                    long bytesCopied = 0;
+                    int read;
+                    
+                    while ((read = in.read(buffer)) != -1) {
+                        out.write(buffer, 0, read);
+                        bytesCopied += read;
+                        updateProgress(bytesCopied, totalBytes);
+                    }
+                }
+                return null;
+            }
+        };
+        
+        copyTask.setOnSucceeded(e -> {
+            if (!modelName.equals(sourceFile.getName())) {
+                prefs.getLocalModelAliases().put(modelName, sourceFile.getName());
+            }
+            
+            fetchModels(false);
+            
+            ModernAlert.info("Import Complete", "Model imported to " + destDir.toString(), root.getScene().getWindow());
+        });
+        
+        copyTask.setOnFailed(e -> {
+            ModernAlert.error("Import Failed", "Failed to import model: " + copyTask.getException().getMessage(), root.getScene().getWindow());
+        });
+        
+        ModernAlert.showProgress("Importing Model", "Copying " + sourceFile.getName() + "...", copyTask, root.getScene().getWindow());
+    }
+    
+    @FXML
     private void onAddModel() {
+        if ("Local LM".equalsIgnoreCase(providerChoice.getValue())) {
+            onBrowseModel();
+            return;
+        }
+        
         String newModel = newModelField.getText();
         if (newModel != null && !newModel.isBlank()) {
             String provider = providerChoice.getValue().toLowerCase();
@@ -231,13 +368,43 @@ public class SettingsController {
     @FXML
     private void onDeleteModel() {
         String selected = modelsList.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            String provider = providerChoice.getValue().toLowerCase();
-            List<String> models = prefs.getCustomModels().get(provider);
-            if (models != null) {
-                models.remove(selected);
-                updateModelsList(providerChoice.getValue());
-            }
+        if (selected == null) return;
+        
+        String provider = providerChoice.getValue().toLowerCase();
+        
+        if ("local lm".equals(provider)) {
+            String filename = prefs.getLocalModelAliases().getOrDefault(selected, selected);
+            
+            LlamaServerManager manager = AppContext.getInstance().getLlamaServerManager();
+            Path modelPath = manager.getModelsDir().resolve(filename);
+            
+            ModernAlert.confirmDanger("Delete Model", "Are you sure you want to delete '" + selected + "' from disk?", 
+                root.getScene().getWindow(), 
+                confirmed -> {
+                    if (confirmed) {
+                        try {
+                            if (Files.exists(modelPath)) {
+                                Files.delete(modelPath);
+                            }
+                            prefs.getLocalModelAliases().remove(selected);
+
+                            List<String> models = prefs.getCustomModels().get(provider);
+                            if (models != null) {
+                                models.remove(selected);
+                                updateModelsList(providerChoice.getValue());
+                            }
+                        } catch (IOException e) {
+                            ModernAlert.error("Delete Failed", "Failed to delete model file: " + e.getMessage(), root.getScene().getWindow());
+                        }
+                    }
+                });
+            return;
+        }
+        
+        List<String> models = prefs.getCustomModels().get(provider);
+        if (models != null) {
+            models.remove(selected);
+            updateModelsList(providerChoice.getValue());
         }
     }
     
@@ -249,6 +416,38 @@ public class SettingsController {
     private void fetchModels(boolean silent) {
         String provider = providerChoice.getValue();
         if (provider == null) return;
+        
+        if ("Local LM".equalsIgnoreCase(provider)) {
+            LlamaServerManager manager = AppContext.getInstance().getLlamaServerManager();
+            List<String> filenames = manager.listAvailableModels();
+            
+            List<String> displayNames = new ArrayList<>();
+            for (String filename : filenames) {
+                String alias = null;
+                for (var entry : prefs.getLocalModelAliases().entrySet()) {
+                    if (entry.getValue().equals(filename)) {
+                        alias = entry.getKey();
+                        break;
+                    }
+                }
+                if (alias != null) {
+                    displayNames.add(alias);
+                } else {
+                    displayNames.add(filename);
+                }
+            }
+            
+            String pKey = "local lm";
+            List<String> currentModels = prefs.getCustomModels().computeIfAbsent(pKey, k -> new ArrayList<>());
+            currentModels.clear();
+            currentModels.addAll(displayNames);
+            
+            updateModelsList(provider);
+            if (!silent) {
+                ModernAlert.info("Models Found", "Found " + displayNames.size() + " local models.", root.getScene().getWindow());
+            }
+            return;
+        }
         
         CompletableFuture.runAsync(() -> {
             try {
@@ -285,7 +484,6 @@ public class SettingsController {
                             jsonRoot.get("models").forEach(node -> fetchedModels.add(node.get("name").asText()));
                         }
                     } else {
-                        // OpenRouter and Groq follow OpenAI format
                         if (jsonRoot.has("data")) {
                             jsonRoot.get("data").forEach(node -> fetchedModels.add(node.get("id").asText()));
                         }
@@ -296,12 +494,10 @@ public class SettingsController {
                             String pKey = provider.toLowerCase();
                             List<String> currentModels = prefs.getCustomModels().computeIfAbsent(pKey, k -> new ArrayList<>());
                             
-                            // For Ollama, we want to REPLACE the list to ensure it matches installed models exactly
                             if (pKey.equals("ollama")) {
                                 currentModels.clear();
                                 currentModels.addAll(fetchedModels);
                             } else {
-                                // For others, merge
                                 for (String m : fetchedModels) {
                                     if (!currentModels.contains(m)) {
                                         currentModels.add(m);
@@ -311,18 +507,14 @@ public class SettingsController {
                             
                             updateModelsList(provider);
                             if (!silent) {
-                                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Successfully fetched " + fetchedModels.size() + " models.");
-                                alert.initOwner(root.getScene().getWindow());
-                                alert.show();
+                                ModernAlert.info("Models Found", "Successfully fetched " + fetchedModels.size() + " models.", root.getScene().getWindow());
                             }
                         }
                     });
                 } else {
                     if (!silent) {
                         Platform.runLater(() -> {
-                            Alert alert = new Alert(Alert.AlertType.ERROR, "Failed to fetch models. Status: " + response.statusCode());
-                            alert.initOwner(root.getScene().getWindow());
-                            alert.show();
+                            ModernAlert.error("Fetch Failed", "Failed to fetch models. Status: " + response.statusCode(), root.getScene().getWindow());
                         });
                     }
                 }
@@ -330,9 +522,7 @@ public class SettingsController {
             } catch (Exception e) {
                 if (!silent) {
                     Platform.runLater(() -> {
-                        Alert alert = new Alert(Alert.AlertType.ERROR, "Error fetching models: " + e.getMessage());
-                        alert.initOwner(root.getScene().getWindow());
-                        alert.show();
+                        ModernAlert.error("Fetch Error", "Error fetching models: " + e.getMessage(), root.getScene().getWindow());
                     });
                 }
             }
@@ -341,10 +531,17 @@ public class SettingsController {
 
     @FXML
     private void onSave() {
+        String selectedProvider = providerChoice.getValue();
+        prefs.setProvider(selectedProvider);
+        
+        // Stop local server if we switched AWAY from Local LM
+        if (!"Local LM".equalsIgnoreCase(selectedProvider)) {
+            AppContext.getInstance().getLlamaServerManager().stopServer();
+        }
+        
         prefs.setTheme(themeToggle.isSelected() ? "dark" : "light");
         prefs.setFontSize(fontSizeSpinner.getValue());
         prefs.setFontFamily(fontFamilyCombo.getValue());
-        prefs.setProvider(providerChoice.getValue());
         
         // Save selected model
         String selectedModel = modelsList.getSelectionModel().getSelectedItem();
@@ -353,7 +550,7 @@ public class SettingsController {
         }
 
         prefs.setOllamaHost(ollamaHost.getText());
-        
+
         // Get key from the field, ensuring we get the latest value
         String orKey = openRouterKeyField.getText();
         String gKey = groqKeyField.getText();

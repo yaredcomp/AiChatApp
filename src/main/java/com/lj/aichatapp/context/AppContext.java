@@ -13,6 +13,7 @@ import com.lj.aichatapp.service.ChatService;
 import com.lj.aichatapp.service.PromptService;
 import com.lj.aichatapp.service.SettingsService;
 import com.lj.aichatapp.service.ai.AIServiceManager;
+import com.lj.aichatapp.service.local.LlamaServerManager;
 
 public class AppContext {
 
@@ -27,6 +28,7 @@ public class AppContext {
     private final AIServiceManager aiServiceManager;
     private final ChatService chatService;
     private final PromptService promptService;
+    private final LlamaServerManager llamaServerManager;
 
     private AppContext() {
         PreferencesManager.ensureAppDirectory();
@@ -43,6 +45,8 @@ public class AppContext {
         this.aiServiceManager = new AIServiceManager(preferences);
         this.chatService = new ChatService(aiServiceManager, conversationRepository, messageRepository, preferences);
         this.promptService = new PromptService(promptRepository);
+        
+        this.llamaServerManager = new LlamaServerManager(PreferencesManager.getAppDirectory().toString());
     }
 
     public static synchronized AppContext getInstance() {
@@ -90,6 +94,10 @@ public class AppContext {
 
     public PromptService getPromptService() {
         return promptService;
+    }
+    
+    public LlamaServerManager getLlamaServerManager() {
+        return llamaServerManager;
     }
 
     public void updatePreferences(UserPreferences newPrefs) {

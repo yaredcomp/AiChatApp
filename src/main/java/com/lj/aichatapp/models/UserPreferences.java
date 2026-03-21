@@ -10,13 +10,16 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserPreferences {
     private String theme = "light";
-    private int fontSize = 14; // Changed to int
+    private int fontSize = 14; 
     private String fontFamily = "System";
     private String provider = "Ollama";
     private String model = "default";
     private String ollamaHost = "http://localhost:11434";
     private Map<String, String> providerKeys = new HashMap<>();
     private Map<String, List<String>> customModels = new HashMap<>();
+    
+    // Map: Custom Name -> Actual Filename (e.g. "My Tiny" -> "tinyllama.gguf")
+    private Map<String, String> localModelAliases = new HashMap<>();
     
     // This prompt defines the core behavior of the AI. It is not user-editable.
     private final String systemPrompt = "You are an academic assistant named iTutor. Your sole purpose is to help users with their academic tasks, such as learning, research, generating study materials, and answering educational questions. Do not engage in casual conversation or any requests outside of this academic scope. If a user asks for something non-academic, politely decline and remind them of your purpose.";
@@ -42,6 +45,9 @@ public class UserPreferences {
             "llama3-70b-8192",
             "gemma-7b-it"
         )));
+        
+        // Local: Placeholder
+        customModels.put("local lm", new ArrayList<>());
     }
 
     public String getTheme() {
@@ -106,6 +112,14 @@ public class UserPreferences {
 
     public void setCustomModels(Map<String, List<String>> customModels) {
         this.customModels = customModels;
+    }
+    
+    public Map<String, String> getLocalModelAliases() {
+        return localModelAliases;
+    }
+
+    public void setLocalModelAliases(Map<String, String> localModelAliases) {
+        this.localModelAliases = localModelAliases;
     }
 
     public String getSystemPrompt() {

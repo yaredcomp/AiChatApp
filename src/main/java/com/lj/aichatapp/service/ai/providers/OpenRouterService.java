@@ -38,6 +38,12 @@ public class OpenRouterService implements AIService {
         CompletableFuture<String> future = new CompletableFuture<>();
 
         try {
+            String apiKey = prefs.getApiKey().trim();
+            if (apiKey.isEmpty()) {
+                future.completeExceptionally(new RuntimeException("OpenRouter API Key is missing. Please enter it in Settings > Providers."));
+                return future;
+            }
+
             List<Map<String, String>> apiMessages = new ArrayList<>();
             for (Message msg : messages) {
                 Map<String, String> m = new HashMap<>();
@@ -52,7 +58,6 @@ public class OpenRouterService implements AIService {
             body.put("stream", true);
 
             String requestBody = objectMapper.writeValueAsString(body);
-            String apiKey = prefs.getApiKey().trim();
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://openrouter.ai/api/v1/chat/completions"))

@@ -38,7 +38,11 @@ public class GroqService implements AIService {
         CompletableFuture<String> future = new CompletableFuture<>();
 
         try {
-            String apiKey = prefs.getProviderKeys().getOrDefault("groq", "");
+            String apiKey = prefs.getApiKey().trim();
+            if (apiKey.isEmpty()) {
+                future.completeExceptionally(new RuntimeException("Groq API Key is missing. Please enter it in Settings > Providers."));
+                return future;
+            }
 
             List<Map<String, String>> apiMessages = new ArrayList<>();
             for (Message msg : messages) {

@@ -122,15 +122,29 @@
                         
                         <VBox styleClass="settings-card">
                             <VBox spacing="16">
-                                <Label text="API Keys" styleClass="card-label"/>
+                                <Label text="Configuration" styleClass="card-label"/>
                                 
                                 <VBox spacing="16">
-                                    <VBox spacing="8">
+                                    <!-- Ollama Config -->
+                                    <VBox fx:id="ollamaConfigBox" spacing="8">
                                         <Label text="Ollama Host" styleClass="input-label"/>
                                         <TextField fx:id="ollamaHost" promptText="http://localhost:11434" styleClass="modern-text-field"/>
                                     </VBox>
                                     
-                                    <VBox spacing="8">
+                                    <!-- Local Llama Config -->
+                                    <VBox fx:id="localLlamaConfigBox" spacing="8" visible="false" managed="false">
+                                        <Label text="Local Model Path (.gguf)" styleClass="input-label"/>
+                                        <HBox spacing="8">
+                                            <TextField fx:id="localModelPathField" promptText="Path to .gguf model file" HBox.hgrow="ALWAYS" styleClass="modern-text-field"/>
+                                            <Button onAction="#onBrowseModel" styleClass="action-button">
+                                                <graphic><FontIcon iconLiteral="fas-folder-open" iconSize="14"/></graphic>
+                                            </Button>
+                                        </HBox>
+                                        <Label text="Supports GGUF format models (e.g., TinyLlama, Gemma)" styleClass="text-small" style="-fx-text-fill: -fx-text-secondary;"/>
+                                    </VBox>
+
+                                    <!-- OpenRouter Config -->
+                                    <VBox fx:id="openRouterConfigBox" spacing="8" visible="false" managed="false">
                                         <Label text="OpenRouter API Key" styleClass="input-label"/>
                                         <HBox spacing="8">
                                             <PasswordField fx:id="openRouterKeyField" promptText="Enter API key" HBox.hgrow="ALWAYS" styleClass="modern-text-field"/>
@@ -141,7 +155,8 @@
                                         </HBox>
                                     </VBox>
                                     
-                                    <VBox spacing="8">
+                                    <!-- Groq Config -->
+                                    <VBox fx:id="groqConfigBox" spacing="8" visible="false" managed="false">
                                         <Label text="Groq API Key" styleClass="input-label"/>
                                         <HBox spacing="8">
                                             <PasswordField fx:id="groqKeyField" promptText="Enter API key" HBox.hgrow="ALWAYS" styleClass="modern-text-field"/>

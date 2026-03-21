@@ -19,6 +19,18 @@ public class Logger {
         log("ERROR", message, throwable);
     }
 
+    public static void error(String message) {
+        log("ERROR", message, null);
+    }
+
+    public static void warn(String message, Throwable throwable) {
+        log("WARN", message, throwable);
+    }
+
+    public static void warn(String message) {
+        log("WARN", message, null);
+    }
+
     public static void info(String message) {
         log("INFO", message, null);
     }

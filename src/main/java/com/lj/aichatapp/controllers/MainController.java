@@ -18,6 +18,7 @@ import com.lj.aichatapp.models.UserPreferences;
 import com.lj.aichatapp.service.ChatService;
 import com.lj.aichatapp.utils.FxUtils;
 import com.lj.aichatapp.utils.Logger;
+import com.lj.aichatapp.utils.ModernAlert;
 import com.lj.aichatapp.utils.ResponseFormatter;
 import javafx.animation.KeyFrame;
 import javafx.util.Duration;
@@ -162,7 +163,7 @@ public class MainController {
                     topRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
                     
                     Label titleLabel = new Label(item.getTitle());
-                    titleLabel.setMaxWidth(140);
+                    titleLabel.setMaxWidth(120);
                     titleLabel.setEllipsisString("...");
                     titleLabel.setStyle("-fx-font-weight: 500;");
                     
@@ -184,44 +185,62 @@ public class MainController {
                     Region spacerRight = new Region();
                     HBox.setHgrow(spacerRight, Priority.ALWAYS);
                     
+                    // Edit Button
+                    Button editBtn = new Button();
+                    editBtn.getStyleClass().add("edit-chat-btn"); // CHANGED to specific class
+                    FontIcon editIcon = new FontIcon("fas-pen");
+                    editIcon.setIconSize(11);
+                    editIcon.setIconColor(javafx.scene.paint.Color.GRAY);
+                    editBtn.setGraphic(editIcon);
+                    editBtn.setTooltip(new Tooltip("Rename"));
+                    
+                    editBtn.setOnAction(e -> {
+                        e.consume();
+                        ModernAlert.askInput("Rename Chat", "Enter new title:", item.getTitle(), 
+                            editBtn.getScene().getWindow(), 
+                            newTitle -> {
+                                if (newTitle != null && !newTitle.isBlank()) {
+                                    chatService.updateConversationTitle(item.getId(), newTitle);
+                                    refreshHistory();
+                                }
+                            });
+                    });
+                    
+                    // Delete Button
                     Button delBtn = new Button();
-                    delBtn.getStyleClass().add("icon-button");
+                    delBtn.getStyleClass().add("delete-chat-btn");
                     FontIcon trashIcon = new FontIcon("fas-trash");
-                    trashIcon.setIconSize(12);
+                    trashIcon.setIconSize(11);
                     trashIcon.setIconColor(javafx.scene.paint.Color.GRAY);
                     delBtn.setGraphic(trashIcon);
+                    delBtn.setTooltip(new Tooltip("Delete"));
                     
                     delBtn.setOnAction(e -> {
                         e.consume();
-                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Delete chat '" + item.getTitle() + "'?", ButtonType.YES, ButtonType.NO);
-                        alert.initOwner(delBtn.getScene().getWindow());
-                        alert.showAndWait();
-                        
-                        if (alert.getResult() == ButtonType.YES) {
-                            chatService.deleteConversation(item.getId());
-                            refreshHistory();
-                            if (currentConversation != null && currentConversation.getId() == item.getId()) {
-                                onNewChat();
-                            }
-                        }
+                        ModernAlert.confirmDanger("Delete Chat", "Are you sure you want to delete '" + item.getTitle() + "'?", 
+                            delBtn.getScene().getWindow(), 
+                            confirmed -> {
+                                if (confirmed) {
+                                    chatService.deleteConversation(item.getId());
+                                    refreshHistory();
+                                    if (currentConversation != null && currentConversation.getId() == item.getId()) {
+                                        onNewChat();
+                                    }
+                                }
+                            });
                     });
+                    
+                    HBox btnBox = new HBox(4, editBtn, delBtn);
+                    btnBox.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+                    btnBox.setVisible(false);
                     
                     HBox hbox = new HBox(5);
                     hbox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
                     
-                    delBtn.setVisible(false);
-                    delBtn.setManaged(false);
+                    hbox.setOnMouseEntered(e -> btnBox.setVisible(true));
+                    hbox.setOnMouseExited(e -> btnBox.setVisible(false));
                     
-                    hbox.setOnMouseEntered(e -> {
-                        delBtn.setVisible(true);
-                        delBtn.setManaged(true);
-                    });
-                    hbox.setOnMouseExited(e -> {
-                        delBtn.setVisible(false);
-                        delBtn.setManaged(false);
-                    });
-                    
-                    hbox.getChildren().addAll(vbox, spacerRight, delBtn);
+                    hbox.getChildren().addAll(vbox, spacerRight, btnBox);
                     
                     setGraphic(hbox);
                 }
@@ -355,12 +374,7 @@ public class MainController {
             navPanel.setPrefWidth(targetWidth);
             navContent.setVisible(isNavExpanded);
             navContent.setManaged(isNavExpanded);
-            
-            if (searchField != null) {
-                searchField.setVisible(isNavExpanded);
-                searchField.setManaged(isNavExpanded);
-            }
-            
+
             // Update toggle button icon
             if (navToggle != null) {
                 FontIcon icon = new FontIcon(isNavExpanded ? "fas-chevron-left" : "fas-chevron-right");

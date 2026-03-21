@@ -224,6 +224,48 @@
     -fx-font-weight: 600;
 }
 
+/* Chat History Edit Button */
+.edit-chat-btn {
+    -fx-background-color: white;
+    -fx-padding: 4 8;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 2, 0, 0, 1);
+}
+
+.edit-chat-btn:hover {
+    -fx-background-color: white;
+}
+
+.edit-chat-btn .ikonli-font-icon {
+    -fx-icon-color: -fx-text-secondary;
+}
+
+.edit-chat-btn:hover .ikonli-font-icon {
+    -fx-icon-color: -fx-primary; /* Green icon on hover */
+}
+
+/* Chat History Delete Button */
+.delete-chat-btn {
+    -fx-background-color: white;
+    -fx-padding: 4 8;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 2, 0, 0, 1);
+}
+
+.delete-chat-btn:hover {
+    -fx-background-color: rgba(239, 68, 68, 0.2); /* Light red tint on hover */
+}
+
+.delete-chat-btn .ikonli-font-icon {
+    -fx-icon-color: -fx-text-secondary;
+}
+
+.delete-chat-btn:hover .ikonli-font-icon {
+    -fx-icon-color: #EF4444; /* Red icon on hover */
+}
+
 /* Chat Area */
 .chat-scroll-pane {
     -fx-background-color: transparent;
@@ -612,13 +654,14 @@
 }
 
 .danger-button {
-    -fx-background-color: transparent;
+    -fx-background-color: white;
     -fx-text-fill: -fx-accent-red;
-    -fx-border-color: -fx-accent-red;
+    -fx-border-color: transparent;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
     -fx-padding: 10 16;
     -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 2, 0, 0, 1);
 }
 
 .danger-button:hover {
@@ -910,18 +953,23 @@
 .send-button {
     -fx-background-color: -fx-primary;
     -fx-background-radius: 50%;
-    -fx-min-width: 44px;
-    -fx-min-height: 44px;
-    -fx-max-width: 44px;
-    -fx-max-height: 44px;
+    -fx-min-width: 46px;
+    -fx-min-height: 46px;
+    -fx-max-width: 46px;
+    -fx-max-height: 46px;
     -fx-cursor: hand;
     -fx-padding: 0;
+    -fx-transition: all 0.2s ease;
+}
+
+.send-button .ikonli-font-icon {
+    -fx-icon-color: white;
 }
 
 .send-button:hover {
     -fx-background-color: -fx-primary-hover;
-    -fx-scale-x: 1.05;
-    -fx-scale-y: 1.05;
+    -fx-scale-x: 1.08;
+    -fx-scale-y: 1.08;
 }
 
 .send-button:pressed {
@@ -1767,4 +1815,23 @@
 .message-text {
     -fx-wrap-text: true;
     -fx-text-fill: -fx-bubble-ai-text;
+}
+
+/* Hide vertical scrollbar in nav panel */
+.nav-panel .scroll-bar:vertical {
+    -fx-pref-width: 0;
+    -fx-opacity: 0;
+}
+
+.nav-panel .scroll-bar:vertical .track,
+.nav-panel .scroll-bar:vertical .thumb {
+    -fx-opacity: 0;
+}
+
+.nav-panel .scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.nav-panel .scroll-pane {
+    -fx-background-color: transparent;
 }
