@@ -1,92 +1,86 @@
-# iTutor - JavaFX AI Chat Application
+# DU Academia ChatAI
 
-iTutor is a modern, lightweight JavaFX desktop chat application designed to interface with various AI models. It supports multiple backend providers including local Ollama instances, OpenRouter, and Groq, allowing for flexible and private AI interactions.
+**DU Academia ChatAI** is a professional, high-performance JavaFX desktop application designed to bridge the gap between academic workflows and modern Artificial Intelligence. Developed by the **Dilla University Computer Science Department**, this tool provides a secure, flexible, and feature-rich environment for interacting with cutting-edge AI models.
 
 ![License](https://img.shields.io/badge/license-Proprietary-red)
-![Java](https://img.shields.io/badge/Java-11%2B-blue)
-![JavaFX](https://img.shields.io/badge/JavaFX-19-orange)
+![Java](https://img.shields.io/badge/Java-21%2B-blue)
+![JavaFX](https://img.shields.io/badge/JavaFX-21-orange)
 
 ---
 
-## Features
+## 🌟 Core Capabilities
 
-- **Multi-Provider Support**: Connects to Ollama (local), OpenRouter, and Groq.
-- **Modern UI**: Clean, responsive interface with Dark/Light theme support.
-- **Streaming Responses**: Real-time text generation for a responsive user experience.
-- **Markdown Support**: Renders formatted text, code blocks, and lists.
-- **Conversation Management**: Create, delete, and search through multiple chat sessions.
-- **Prompt Library**: Save and reuse commonly used prompts.
-- **Customizable**: Adjustable font settings, themes, and API configurations.
-- **Local Storage**: Conversation history and preferences are stored locally for privacy.
-
----
-
-## Architecture
-
-The application follows a clean MVC (Model-View-Controller) architecture:
-
-- **Core**: `App.java` handles the application lifecycle.
-- **Controllers**: `MainController`, `SettingsController`, and `PromptsController` manage UI logic.
-- **Services**: `ChatService`, `PromptService` manage business logic and data persistence.
-- **Providers**: Extensible `AIProvider` interface with implementations for Ollama, OpenRouter, etc.
-- **Utils**: Helper classes for UI effects (`FxUtils`) and text formatting (`ResponseFormatter`).
+*   **Intelligent Multi-Provider Integration**: Seamlessly switch between local inference (via Ollama or Embedded Llama) and cloud-based providers like Groq and OpenRouter.
+*   **Privacy-First Local Storage**: All conversation histories, system prompts, and preferences are stored securely on your local machine using an optimized SQLite database.
+*   **Modern, Reactive UI**: Features a sleek, "ultra-modern" interface with native Dark and Light mode support, center-cropped circular branding, and responsive typography.
+*   **Advanced Prompt Engineering**: A dedicated Prompt Library allows users to curate, manage, and instantly deploy complex system instructions with variable support.
+*   **Real-Time Streaming Inference**: Optimized text generation streaming for a low-latency, conversational experience.
+*   **Comprehensive Markdown Rendering**: High-fidelity rendering of mathematical formulas, formatted code blocks with syntax highlighting, and complex academic tables.
+*   **Session Management**: Intuitive navigation with search capabilities, renaming, and persistent conversation history.
 
 ---
 
-## Getting Started
+## 🏗️ Architecture & Development
+
+The project is built on a robust, modular architecture (`edu.du.et.chatapp`) that prioritizes extensibility and maintainability:
+
+*   **Modular System**: Leverages the Java Module System (JPMS) for enhanced security and runtime efficiency.
+*   **Service-Oriented Design**: Business logic is encapsulated in dedicated services (`ChatService`, `AIServiceManager`) for clear separation from the UI.
+*   **Infrastructure Abstraction**: Database and preference management are abstracted behind clean repository interfaces.
+*   **Theme Management**: A centralized `ThemeManager` reactively handles global styling and synchronization between JavaFX and embedded WebKit components.
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- JDK 11 or higher (JDK 21+ recommended for best performance).
-- Maven 3.8+.
-- (Optional) Local [Ollama](https://ollama.com/) installation for local model inference.
+*   **JDK 21 or higher** (JDK 25 recommended).
+*   **Maven 3.8+**.
+*   (Optional) **Ollama** for local model serving.
 
 ### Installation & Run
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/yourusername/iTutor.git
-   cd iTutor
-   ```
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/Dilla-University-CS/DUAcademiaAIChat.git
+    cd DUAcademiaAIChat
+    ```
 
-2. **Build the project**:
-   ```bash
-   mvn clean package
-   ```
+2.  **Build the project**:
+    ```bash
+    mvn clean package
+    ```
 
-3. **Run the application**:
-   ```bash
-   mvn javafx:run
-   ```
-   *Or run the shaded jar from the target directory.*
-
----
-
-## Configuration
-
-**Providers:**
-- Go to **Settings** (Gear icon).
-- Select your provider (Ollama, OpenRouter, Groq).
-- Enter your API Key (for cloud providers) or Host URL (for Ollama, default: `http://localhost:11434`).
-
-**Models:**
-- You can manually add model names or fetch available models from the provider in the **Models** tab.
-
-**Preferences:**
-- Customize Font Family, Font Size, and Theme (Dark/Light) in **General** settings.
+3.  **Run the application**:
+    ```bash
+    mvn javafx:run
+    ```
 
 ---
 
-## Roadmap
+## 🛠️ Configuration
 
-- [ ] **Database Migration**: Fully migrate local storage from JSON/SQLite to a robust schema with migration tools.
-- [ ] **Export/Import**: Support exporting chats to Markdown/PDF.
-- [ ] **Multi-modal Support**: Image input capabilities for supported models.
-- [ ] **Voice Interface**: Speech-to-Text and Text-to-Speech integration.
+**Provider Setup:**
+1.  Access **Settings** (Gear icon).
+2.  Choose your preferred provider (Ollama, Local LM, Groq, or OpenRouter).
+3.  Configure API keys or server hosts as required.
+
+**Model Management:**
+*   Automatically fetch available models from providers or manually import GGUF files for local inference.
+
+**Personalization:**
+*   Adjust Font Family, Font Size, and toggle between Light/Dark themes. Theme changes propagate instantly across the entire application, including the chat interface.
 
 ---
 
-## License
+## 🏛️ Credits
+
+Developed with excellence by the **Dilla University Computer Science Department**. 
+
+---
+
+## 📄 License
 
 This software is provided under a proprietary End User License Agreement (EULA). See `EULA.txt` for details.
-All rights reserved by the original author.
+All rights reserved by **Dilla University**.

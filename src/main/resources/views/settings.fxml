@@ -1,224 +1,203 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import org.kordamp.ikonli.javafx.FontIcon?>
-
-<VBox fx:id="root" spacing="0" styleClass="settings-root" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.lj.aichatapp.controllers.SettingsController" prefWidth="950" prefHeight="650">
-    <padding>
-        <Insets bottom="0" left="0" right="0" top="0" />
-    </padding>
+<VBox fx:id="root" spacing="0" styleClass="settings-root" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.du.et.chatapp.controllers.SettingsController" prefWidth="900" prefHeight="600">
     
-    <HBox spacing="0" VBox.vgrow="ALWAYS">
-        <VBox styleClass="settings-sidebar" minWidth="180" maxWidth="180">
-            <padding>
-                <Insets top="24" bottom="24" left="16" right="16"/>
-            </padding>
-            
-            <Label text="Settings" styleClass="settings-sidebar-title"/>
-            
-            <Region prefHeight="24"/>
-            
-            <VBox spacing="4">
-                <Button onAction="#switchToGeneral" styleClass="settings-nav-btn" id="nav-general">
-                    <graphic>
-                        <FontIcon iconLiteral="fas-sliders-h" iconSize="16"/>
-                    </graphic>
-                    <text>General</text>
-                </Button>
-                <Button onAction="#switchToProviders" styleClass="settings-nav-btn" id="nav-providers">
-                    <graphic>
-                        <FontIcon iconLiteral="fas-server" iconSize="16"/>
-                    </graphic>
-                    <text>Providers</text>
-                </Button>
-                <Button onAction="#switchToModels" styleClass="settings-nav-btn" id="nav-models">
-                    <graphic>
-                        <FontIcon iconLiteral="fas-database" iconSize="16"/>
-                    </graphic>
-                    <text>Models</text>
-                </Button>
-            </VBox>
-            
-            <Region VBox.vgrow="ALWAYS"/>
-            
-            <VBox spacing="8">
-                <Label text="Version 1.0.0" styleClass="settings-version"/>
-            </VBox>
-        </VBox>
-        
-        <Separator orientation="VERTICAL" styleClass="settings-sidebar-separator"/>
-        
-        <VBox HBox.hgrow="ALWAYS" spacing="0">
-            <ScrollPane VBox.vgrow="ALWAYS" hbarPolicy="NEVER" styleClass="settings-content-scroll">
-                <VBox spacing="24">
-                    <padding>
-                        <Insets top="32" right="32" bottom="32" left="32"/>
-                    </padding>
-                    <!-- General Section -->
-                    <VBox fx:id="generalSection" spacing="20">
-                        <HBox alignment="CENTER_LEFT" spacing="12">
-                            <FontIcon iconLiteral="fas-sliders-h" iconSize="24" styleClass="section-icon"/>
-                            <Label text="General" styleClass="settings-section-title"/>
-                        </HBox>
-                        
-                        <VBox styleClass="settings-card">
-                            <VBox spacing="16">
-                                <HBox alignment="CENTER_LEFT" spacing="16">
-                                    <VBox spacing="4" HBox.hgrow="ALWAYS">
-                                        <Label text="Theme" styleClass="card-label"/>
-                                        <Label text="Switch between light and dark mode" styleClass="card-description"/>
-                                    </VBox>
-                                    <ToggleButton fx:id="themeToggle" styleClass="modern-toggle"/>
+    <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" styleClass="floating">
+        <tabs>
+            <!-- General Settings Tab -->
+            <Tab text="General">
+                <graphic>
+                    <Label fx:id="iconGeneralTab" />
+                </graphic>
+                <content>
+                    <ScrollPane hbarPolicy="NEVER" fitToWidth="true" styleClass="chat-scroll-pane">
+                        <content>
+                            <VBox spacing="20" style="-fx-padding: 24 32;">
+                                <HBox alignment="CENTER_LEFT" spacing="12">
+                                    <Label fx:id="iconGeneralHeader" styleClass="accent" />
+                                    <Label text="Application Settings" styleClass="title-3"/>
                                 </HBox>
-                                
-                                <Separator styleClass="card-separator"/>
-                                
-                                <GridPane hgap="16" vgap="16">
-                                    <columnConstraints>
-                                        <ColumnConstraints hgrow="NEVER" minWidth="100"/>
-                                        <ColumnConstraints hgrow="ALWAYS"/>
-                                    </columnConstraints>
-                                    
-                                    <Label text="Font Family" styleClass="card-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                                    <ComboBox fx:id="fontFamilyCombo" maxWidth="Infinity" styleClass="modern-combo" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                                    
-                                    <Label text="Font Size" styleClass="card-label" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                                    <Spinner fx:id="fontSizeSpinner" min="8" max="24" initialValue="14" amountToStepBy="1" editable="true" prefWidth="100" styleClass="modern-spinner" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-                                </GridPane>
-                            </VBox>
-                        </VBox>
-                        
-                        <VBox styleClass="settings-card">
-                            <VBox spacing="12">
-                                <VBox spacing="4">
-                                    <Label text="System Prompt" styleClass="card-label"/>
-                                    <Label text="The core instruction that defines AI behavior" styleClass="card-description"/>
-                                </VBox>
-                                <TextArea fx:id="systemPromptArea" editable="false" wrapText="true" prefRowCount="3" styleClass="read-only-area"/>
-                            </VBox>
-                        </VBox>
-                    </VBox>
-                    
-                    <!-- Providers Section -->
-                    <VBox fx:id="providersSection" spacing="20" visible="false" managed="false">
-                        <HBox alignment="CENTER_LEFT" spacing="12">
-                            <FontIcon iconLiteral="fas-server" iconSize="24" styleClass="section-icon"/>
-                            <Label text="Providers &amp; API Keys" styleClass="settings-section-title"/>
-                        </HBox>
-                        
-                        <VBox styleClass="settings-card">
-                            <VBox spacing="16">
-                                <HBox alignment="CENTER_LEFT" spacing="16">
-                                    <VBox spacing="4" HBox.hgrow="ALWAYS">
-                                        <Label text="Active Provider" styleClass="card-label"/>
-                                        <Label text="Select which AI provider to use" styleClass="card-description"/>
-                                    </VBox>
-                                    <ChoiceBox fx:id="providerChoice" prefWidth="180" styleClass="modern-choice"/>
-                                </HBox>
-                            </VBox>
-                        </VBox>
-                        
-                        <VBox styleClass="settings-card">
-                            <VBox spacing="16">
-                                <Label text="Configuration" styleClass="card-label"/>
-                                
-                                <VBox spacing="16">
-                                    <!-- Ollama Config -->
-                                    <VBox fx:id="ollamaConfigBox" spacing="8">
-                                        <Label text="Ollama Host" styleClass="input-label"/>
-                                        <TextField fx:id="ollamaHost" promptText="http://localhost:11434" styleClass="modern-text-field"/>
-                                    </VBox>
-                                    
-                                    <!-- Local Llama Config -->
-                                    <VBox fx:id="localLlamaConfigBox" spacing="8" visible="false" managed="false">
-                                        <Label text="Local Model Path (.gguf)" styleClass="input-label"/>
-                                        <HBox spacing="8">
-                                            <TextField fx:id="localModelPathField" promptText="Path to .gguf model file" HBox.hgrow="ALWAYS" styleClass="modern-text-field"/>
-                                            <Button onAction="#onBrowseModel" styleClass="action-button">
-                                                <graphic><FontIcon iconLiteral="fas-folder-open" iconSize="14"/></graphic>
-                                            </Button>
-                                        </HBox>
-                                        <Label text="Supports GGUF format models (e.g., TinyLlama, Gemma)" styleClass="text-small" style="-fx-text-fill: -fx-text-secondary;"/>
-                                    </VBox>
 
-                                    <!-- OpenRouter Config -->
-                                    <VBox fx:id="openRouterConfigBox" spacing="8" visible="false" managed="false">
-                                        <Label text="OpenRouter API Key" styleClass="input-label"/>
-                                        <HBox spacing="8">
-                                            <PasswordField fx:id="openRouterKeyField" promptText="Enter API key" HBox.hgrow="ALWAYS" styleClass="modern-text-field"/>
-                                            <TextField fx:id="openRouterKeyText" promptText="Enter API key" managed="false" visible="false" HBox.hgrow="ALWAYS" styleClass="modern-text-field"/>
-                                            <ToggleButton fx:id="openRouterToggle" styleClass="icon-button">
-                                                <graphic><FontIcon iconLiteral="fas-eye" iconSize="14"/></graphic>
+                                <VBox styleClass="settings-card">
+                                    <VBox spacing="16">
+                                        <HBox alignment="CENTER_LEFT" spacing="16">
+                                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                                <Label text="Theme" styleClass="card-label"/>
+                                                <Label text="Switch between light and dark mode" styleClass="card-description"/>
+                                            </VBox>
+                                            <ToggleButton fx:id="themeToggle" styleClass="button-icon">
+                                                <graphic><Label fx:id="iconTheme" /></graphic>
                                             </ToggleButton>
                                         </HBox>
+
+                                        <Separator/>
+
+                                        <GridPane hgap="16" vgap="16">
+                                            <columnConstraints>
+                                                <ColumnConstraints hgrow="NEVER" minWidth="120"/>
+                                                <ColumnConstraints hgrow="ALWAYS"/>
+                                            </columnConstraints>
+
+                                            <Label text="Font Family" styleClass="card-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                            <ComboBox fx:id="fontFamilyCombo" maxWidth="Infinity" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                                            <Label text="Font Size" styleClass="card-label" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                            <Spinner fx:id="fontSizeSpinner" min="8" max="24" initialValue="14" amountToStepBy="1" editable="true" prefWidth="120" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                                        </GridPane>
                                     </VBox>
-                                    
-                                    <!-- Groq Config -->
-                                    <VBox fx:id="groqConfigBox" spacing="8" visible="false" managed="false">
-                                        <Label text="Groq API Key" styleClass="input-label"/>
-                                        <HBox spacing="8">
-                                            <PasswordField fx:id="groqKeyField" promptText="Enter API key" HBox.hgrow="ALWAYS" styleClass="modern-text-field"/>
-                                            <TextField fx:id="groqKeyText" promptText="Enter API key" managed="false" visible="false" HBox.hgrow="ALWAYS" styleClass="modern-text-field"/>
-                                            <ToggleButton fx:id="groqToggle" styleClass="icon-button">
-                                                <graphic><FontIcon iconLiteral="fas-eye" iconSize="14"/></graphic>
-                                            </ToggleButton>
-                                        </HBox>
+                                </VBox>
+
+                                <VBox styleClass="settings-card">
+                                    <VBox spacing="12">
+                                        <VBox spacing="4">
+                                            <Label text="System Prompt" styleClass="card-label"/>
+                                            <Label text="The core instruction that defines AI behavior" styleClass="card-description"/>
+                                        </VBox>
+                                        <TextArea fx:id="systemPromptArea" wrapText="true" prefRowCount="3" styleClass="modern-text-field"/>
                                     </VBox>
                                 </VBox>
                             </VBox>
-                        </VBox>
-                    </VBox>
-                    
-                    <!-- Models Section -->
-                    <VBox fx:id="modelsSection" spacing="20" visible="false" managed="false">
-                        <HBox alignment="CENTER_LEFT" spacing="12">
-                            <FontIcon iconLiteral="fas-database" iconSize="24" styleClass="section-icon"/>
-                            <Label text="Manage Models" styleClass="settings-section-title"/>
-                        </HBox>
-                        
-                        <HBox spacing="20" VBox.vgrow="ALWAYS">
-                            <VBox spacing="12" HBox.hgrow="ALWAYS">
-                                <Label text="Add New Model" styleClass="card-label"/>
-                                <TextField fx:id="newModelField" promptText="Model name (e.g., llama3)" styleClass="modern-text-field"/>
-                                <Button onAction="#onAddModel" text="Add Model" maxWidth="Infinity" styleClass="action-button">
-                                    <graphic><FontIcon iconLiteral="fas-plus-circle" iconSize="14"/></graphic>
-                                </Button>
-                                
-                                <Region prefHeight="16"/>
-                                
-                                <Label text="Auto-Discovery" styleClass="card-label"/>
-                                <Button onAction="#onFetchModels" text="Fetch Models from API" maxWidth="Infinity" styleClass="action-button">
-                                    <graphic><FontIcon iconLiteral="fas-sync-alt" iconSize="14"/></graphic>
-                                </Button>
-                                <Label text="Automatically fetch available models from the selected provider" wrapText="true" styleClass="card-description"/>
-                            </VBox>
-                            
-                            <Separator orientation="VERTICAL" styleClass="vertical-separator"/>
-                            
-                            <VBox spacing="12" HBox.hgrow="ALWAYS">
-                                <HBox alignment="CENTER_LEFT">
-                                    <Label text="Available Models" styleClass="card-label"/>
-                                    <Region HBox.hgrow="ALWAYS"/>
-                                    <Label fx:id="currentModelLabel" text="None selected" styleClass="selected-model-label"/>
+                        </content>
+                    </ScrollPane>
+                </content>
+            </Tab>
+
+            <!-- Providers & Models Combined Tab -->
+            <Tab text="Providers &amp; Models">
+                <graphic>
+                    <Label fx:id="iconProvidersTab" />
+                </graphic>
+                <content>
+                    <ScrollPane hbarPolicy="NEVER" fitToWidth="true" styleClass="chat-scroll-pane">
+                        <content>
+                            <VBox spacing="20" style="-fx-padding: 24 32;">
+                                <HBox alignment="CENTER_LEFT" spacing="12">
+                                    <Label fx:id="iconProvidersHeader" styleClass="accent" />
+                                    <Label text="Provider Configuration" styleClass="title-3"/>
                                 </HBox>
-                                <ListView fx:id="modelsList" VBox.vgrow="ALWAYS" styleClass="modern-list-view"/>
-                                <Button onAction="#onDeleteModel" text="Delete Selected" maxWidth="Infinity" styleClass="danger-button">
-                                    <graphic><FontIcon iconLiteral="fas-trash-alt" iconSize="14"/></graphic>
-                                </Button>
+
+                                <VBox styleClass="settings-card">
+                                    <VBox spacing="12">
+                                        <HBox alignment="CENTER_LEFT" spacing="16">
+                                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                                <Label text="Active Provider" styleClass="card-label"/>
+                                                <Label text="Select which AI service to use" styleClass="card-description"/>
+                                            </VBox>
+                                            <ChoiceBox fx:id="providerChoice" prefWidth="180" />
+                                        </HBox>
+                                    </VBox>
+                                </VBox>
+
+                                <VBox styleClass="settings-card">
+                                    <VBox spacing="12">
+                                        <Label text="API &amp; Server Connectivity" styleClass="card-label"/>
+                                        <VBox spacing="12">
+                                            <!-- Ollama Config -->
+                                            <VBox fx:id="ollamaConfigBox" spacing="8">
+                                                <Label text="Ollama Host URL" styleClass="text-small text-bold"/>
+                                                <TextField fx:id="ollamaHost" promptText="http://localhost:11434" />
+                                            </VBox>
+
+                                            <!-- Local Llama Config -->
+                                            <VBox fx:id="localLlamaConfigBox" spacing="8" visible="false" managed="false">
+                                                <Label text="Model Path (Auto-managed)" styleClass="text-small text-bold"/>
+                                                <HBox spacing="8">
+                                                    <TextField fx:id="localModelPathField" editable="false" promptText="Select a model below to see path" HBox.hgrow="ALWAYS" />
+                                                    <Button fx:id="btnBrowseModel" onAction="#onBrowseModel" styleClass="button-icon">
+                                                        <tooltip>
+                                                            <Tooltip text="Import new GGUF model"/>
+                                                        </tooltip>
+                                                        <graphic><Label fx:id="iconBrowse" /></graphic>
+                                                    </Button>
+                                                </HBox>
+                                            </VBox>
+
+                                            <!-- OpenRouter Config -->
+                                            <VBox fx:id="openRouterConfigBox" spacing="8" visible="false" managed="false">
+                                                <Label text="OpenRouter API Key" styleClass="text-small text-bold"/>
+                                                <HBox spacing="8">
+                                                    <StackPane HBox.hgrow="ALWAYS">
+                                                        <PasswordField fx:id="openRouterKeyField" promptText="sk-or-v1-..." />
+                                                        <TextField fx:id="openRouterKeyText" visible="false" managed="false" />
+                                                    </StackPane>
+                                                    <ToggleButton fx:id="openRouterToggle" styleClass="button-icon">
+                                                        <graphic><Label fx:id="iconOpenRouterEye" /></graphic>
+                                                    </ToggleButton>
+                                                </HBox>
+                                            </VBox>
+
+                                            <!-- Groq Config -->
+                                            <VBox fx:id="groqConfigBox" spacing="8" visible="false" managed="false">
+                                                <Label text="Groq API Key" styleClass="text-small text-bold"/>
+                                                <HBox spacing="8">
+                                                    <StackPane HBox.hgrow="ALWAYS">
+                                                        <PasswordField fx:id="groqKeyField" promptText="gsk_..." />
+                                                        <TextField fx:id="groqKeyText" visible="false" managed="false" />
+                                                    </StackPane>
+                                                    <ToggleButton fx:id="groqToggle" styleClass="button-icon">
+                                                        <graphic><Label fx:id="iconGroqEye" /></graphic>
+                                                    </ToggleButton>
+                                                </HBox>
+                                            </VBox>
+                                        </VBox>
+                                    </VBox>
+                                </VBox>
+
+                                <!-- Integrated Model Management Section -->
+                                <VBox spacing="12">
+                                    <HBox alignment="CENTER_LEFT" spacing="12">
+                                        <Label fx:id="iconModelsHeader" styleClass="accent" />
+                                        <Label text="Model Selection" styleClass="title-3"/>
+                                    </HBox>
+
+                                    <HBox spacing="16">
+                                        <VBox spacing="12" HBox.hgrow="ALWAYS" styleClass="settings-card">
+                                            <Label text="Available Models" styleClass="card-label"/>
+                                            <HBox alignment="CENTER_LEFT" spacing="8">
+                                                <Label text="Selected:" styleClass="card-description"/>
+                                                <Label fx:id="currentModelLabel" text="None" styleClass="text-bold text-accent"/>
+                                            </HBox>
+                                            <ListView fx:id="modelsList" prefHeight="180" minHeight="150" VBox.vgrow="ALWAYS" />
+                                            <HBox spacing="8">
+                                                <Button fx:id="btnRefreshModels" onAction="#onFetchModels" text="Refresh" styleClass="accent">
+                                                    <graphic><Label fx:id="iconRefresh" /></graphic>
+                                                </Button>
+                                                <Button fx:id="btnDeleteModel" onAction="#onDeleteModel" text="Delete" styleClass="danger">
+                                                    <graphic><Label fx:id="iconDelete" /></graphic>
+                                                </Button>
+                                            </HBox>
+                                        </VBox>
+
+                                        <VBox spacing="12" minWidth="280" styleClass="settings-card">
+                                            <Label text="Add / Import" styleClass="card-label"/>
+                                            <TextField fx:id="newModelField" promptText="Model name..." />
+                                            <Button fx:id="btnAddModel" onAction="#onAddModel" text="Add Model" maxWidth="Infinity" styleClass="success">
+                                                <graphic><Label fx:id="iconPlusCircle" /></graphic>
+                                            </Button>
+
+                                            <Separator/>
+
+                                            <Button fx:id="btnImportGGUF" onAction="#onBrowseModel" text="Import GGUF" maxWidth="Infinity" styleClass="accent">
+                                                <graphic><Label fx:id="iconFileImport" /></graphic>
+                                            </Button>
+                                        </VBox>
+                                    </HBox>
+                                </VBox>
                             </VBox>
-                        </HBox>
-                    </VBox>
-                </VBox>
-            </ScrollPane>
-            
-            <HBox styleClass="settings-footer" alignment="CENTER_RIGHT" spacing="12">
-                <Button onAction="#onCancel" text="Cancel" styleClass="cancel-button"/>
-                <Button onAction="#onSave" text="Save Changes" styleClass="save-button">
-                    <graphic><FontIcon iconLiteral="fas-check" iconSize="14" iconColor="white"/></graphic>
-                </Button>
-            </HBox>
-        </VBox>
+                        </content>
+                    </ScrollPane>
+                </content>
+            </Tab>
+        </tabs>
+    </TabPane>
+
+    <!-- Footer Buttons -->
+    <HBox alignment="CENTER_RIGHT" spacing="12" style="-fx-padding: 12 24; -fx-background-color: -color-bg-subtle; -fx-border-color: -color-border-subtle; -fx-border-width: 1 0 0 0;">
+        <Button onAction="#onCancel" text="Cancel" />
+        <Button fx:id="btnSave" onAction="#onSave" text="Save Changes" styleClass="accent">
+            <graphic><Label fx:id="iconSave" /></graphic>
+        </Button>
     </HBox>
 </VBox>

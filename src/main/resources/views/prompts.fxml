@@ -3,78 +3,63 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import org.kordamp.ikonli.javafx.FontIcon?>
-
-<VBox fx:id="root" spacing="0" styleClass="prompts-root" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.lj.aichatapp.controllers.PromptsController" prefWidth="850" prefHeight="550">
-    <padding>
-        <Insets bottom="0" left="0" right="0" top="0" />
-    </padding>
-    
-    <HBox styleClass="prompts-header" alignment="CENTER_LEFT">
-        <padding>
-            <Insets top="20" bottom="20" left="24" right="24"/>
-        </padding>
-        <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
-            <FontIcon iconLiteral="fas-book-open" iconSize="22" styleClass="prompts-header-icon"/>
-            <Label text="Prompt Library" styleClass="prompts-title"/>
-        </HBox>
+<VBox fx:id="root" styleClass="prompts-root" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.du.et.chatapp.controllers.PromptsController" prefWidth="900" prefHeight="600">
+    <HBox styleClass="title-bar" alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 12 16;">
+        <Label fx:id="iconLibrary" styleClass="app-icon" />
+        <Label text="Prompt Library" styleClass="app-title"/>
     </HBox>
-    
-    <HBox spacing="0" VBox.vgrow="ALWAYS">
-        <VBox styleClass="prompts-list-panel" minWidth="280" maxWidth="350">
-            <padding>
-                <Insets top="0" bottom="16" left="16" right="12"/>
-            </padding>
-            
-            <VBox spacing="12">
-                <TextField fx:id="searchField" promptText="Search prompts..." styleClass="prompts-search-field"/>
-                
-                <ListView fx:id="promptsList" VBox.vgrow="ALWAYS" styleClass="prompts-list-view"/>
-                
-                <Button onAction="#onNewPrompt" maxWidth="Infinity" styleClass="new-chat-btn">
-                    <graphic>
-                        <FontIcon iconLiteral="fas-plus" iconSize="14"/>
-                    </graphic>
-                    <text>Create New Prompt</text>
-                </Button>
-            </VBox>
-        </VBox>
-        
-        <Separator orientation="VERTICAL" styleClass="prompts-separator"/>
-        
-        <VBox HBox.hgrow="ALWAYS">
-            <padding>
-                <Insets top="20" bottom="20" left="24" right="24"/>
-            </padding>
-            
-            <VBox spacing="16" VBox.vgrow="ALWAYS">
-                <VBox spacing="8">
-                    <Label text="Title" styleClass="input-label"/>
-                    <TextField fx:id="titleField" promptText="Enter prompt title..." styleClass="prompts-text-field"/>
-                </VBox>
-                
-                <VBox spacing="8" VBox.vgrow="ALWAYS">
-                    <HBox alignment="CENTER_LEFT">
-                        <Label text="Content" styleClass="input-label" HBox.hgrow="ALWAYS"/>
-                        <Label text="Supports Markdown" styleClass="markdown-hint"/>
-                    </HBox>
-                    <TextArea fx:id="contentArea" promptText="Write your prompt here...
 
-You can use {{variable}} syntax for dynamic content." wrapText="true" VBox.vgrow="ALWAYS" styleClass="prompts-text-area"/>
-                </VBox>
-                
-                <HBox spacing="12" alignment="CENTER_RIGHT">
-                    <Button onAction="#onDelete" text="Delete" styleClass="danger-button" visible="false" managed="false" id="deleteBtn">
-                        <graphic><FontIcon iconLiteral="fas-trash-alt" iconSize="14"/></graphic>
-                    </Button>
-                    <Button onAction="#onUse" text="Use Prompt" styleClass="use-button">
-                        <graphic><FontIcon iconLiteral="fas-paper-plane" iconSize="14"/></graphic>
-                    </Button>
-                    <Button onAction="#onSave" text="Save" styleClass="save-button">
-                        <graphic><FontIcon iconLiteral="fas-save" iconSize="14" iconColor="white"/></graphic>
-                    </Button>
-                </HBox>
+    <Separator/>
+
+    <HBox spacing="0" VBox.vgrow="ALWAYS">
+        <!-- Sidebar -->
+        <VBox styleClass="nav-panel" minWidth="280" maxWidth="280" spacing="16">
+            <padding>
+                <Insets top="16" right="16" bottom="16" left="16"/>
+            </padding>
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                 <TextField fx:id="searchField" promptText="Search prompts..." styleClass="search-field" HBox.hgrow="ALWAYS"/>
+                 <Button fx:id="btnNewPrompt" onAction="#onNewPrompt" styleClass="window-button">
+                     <graphic><Label fx:id="iconPlus" /></graphic>
+                     <tooltip><Tooltip text="New Prompt"/></tooltip>
+                 </Button>
+            </HBox>
+            
+            <ListView fx:id="promptsList" VBox.vgrow="ALWAYS" styleClass="chat-history-list"/>
+        </VBox>
+
+        <!-- Main Content -->
+        <VBox HBox.hgrow="ALWAYS" styleClass="main-content" spacing="20">
+            <padding>
+                <Insets top="24" right="32" bottom="24" left="32"/>
+            </padding>
+            
+            <VBox spacing="8">
+                <Label text="Title" styleClass="card-label"/>
+                <TextField fx:id="titleField" promptText="Enter prompt title..." styleClass="modern-text-field"/>
             </VBox>
+
+            <VBox spacing="8" VBox.vgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="Content" styleClass="card-label"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="Supports Markdown &amp; {{variables}}" styleClass="card-description"/>
+                </HBox>
+                <TextArea fx:id="contentArea" promptText="Write your prompt here..." wrapText="true" VBox.vgrow="ALWAYS" styleClass="modern-text-field"/>
+            </VBox>
+
+            <HBox spacing="12" alignment="CENTER_RIGHT">
+                <Button fx:id="deleteBtn" onAction="#onDelete" text="Delete" styleClass="danger-button" visible="false" managed="false">
+                    <graphic><Label fx:id="iconTrash" /></graphic>
+                </Button>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="btnUse" onAction="#onUse" text="Use Prompt" styleClass="cancel-button">
+                    <graphic><Label fx:id="iconUse" /></graphic>
+                </Button>
+                <Button fx:id="btnSave" onAction="#onSave" text="Save Changes" styleClass="save-button">
+                    <graphic><Label fx:id="iconSave" /></graphic>
+                </Button>
+            </HBox>
         </VBox>
     </HBox>
 </VBox>
