@@ -10,13 +10,13 @@
 
 ## 🌟 Core Capabilities
 
-*   **Intelligent Multi-Provider Integration**: Seamlessly switch between local inference (via Ollama or Embedded Llama) and cloud-based providers like Groq and OpenRouter.
-*   **Privacy-First Local Storage**: All conversation histories, system prompts, and preferences are stored securely on your local machine using an optimized SQLite database.
-*   **Modern, Reactive UI**: Features a sleek, "ultra-modern" interface with native Dark and Light mode support, center-cropped circular branding, and responsive typography.
-*   **Advanced Prompt Engineering**: A dedicated Prompt Library allows users to curate, manage, and instantly deploy complex system instructions with variable support.
-*   **Real-Time Streaming Inference**: Optimized text generation streaming for a low-latency, conversational experience.
-*   **Comprehensive Markdown Rendering**: High-fidelity rendering of mathematical formulas, formatted code blocks with syntax highlighting, and complex academic tables.
-*   **Session Management**: Intuitive navigation with search capabilities, renaming, and persistent conversation history.
+- **Intelligent Multi-Provider Integration**: Seamlessly switch between local inference (via Ollama or Embedded Llama) and cloud-based providers like Groq and OpenRouter.
+- **Privacy-First Local Storage**: All conversation histories, system prompts, and preferences are stored securely on your local machine using an optimized SQLite database.
+- **Modern, Reactive UI**: Features a sleek, "ultra-modern" interface with native Dark and Light mode support, center-cropped circular branding, and responsive typography.
+- **Advanced Prompt Engineering**: A dedicated Prompt Library allows users to curate, manage, and instantly deploy complex system instructions with variable support.
+- **Real-Time Streaming Inference**: Optimized text generation streaming for a low-latency, conversational experience.
+- **Comprehensive Markdown Rendering**: High-fidelity rendering of mathematical formulas, formatted code blocks with syntax highlighting, and complex academic tables.
+- **Session Management**: Intuitive navigation with search capabilities, renaming, and persistent conversation history.
 
 ---
 
@@ -24,30 +24,51 @@
 
 The project is built on a robust, modular architecture (`edu.du.et.chatapp`) that prioritizes extensibility and maintainability:
 
-*   **Modular System**: Leverages the Java Module System (JPMS) for enhanced security and runtime efficiency.
-*   **Service-Oriented Design**: Business logic is encapsulated in dedicated services (`ChatService`, `AIServiceManager`) for clear separation from the UI.
-*   **Infrastructure Abstraction**: Database and preference management are abstracted behind clean repository interfaces.
-*   **Theme Management**: A centralized `ThemeManager` reactively handles global styling and synchronization between JavaFX and embedded WebKit components.
+- **Modular System**: Leverages the Java Module System (JPMS) for enhanced security and runtime efficiency.
+- **Service-Oriented Design**: Business logic is encapsulated in dedicated services (`ChatService`, `AIServiceManager`) for clear separation from the UI.
+- **Infrastructure Abstraction**: Database and preference management are abstracted behind clean repository interfaces.
+- **Theme Management**: A centralized `ThemeManager` reactively handles global styling and synchronization between JavaFX and embedded WebKit components.
 
 ---
 
 ## 🚀 Getting Started
 
+[//]: # "Screenshots Section"
+
+## 🖼️ Application Screenshots
+
+Below are screenshots showcasing the look and feel of DU Academia ChatAI in action:
+
+1. **Startup & Welcome Screen**
+   ![Screenshot 1](screenshot/1.png)
+2. **Main Chat Interface**
+   ![Screenshot 2](screenshot/2.png)
+3. **Prompt Library**
+   ![Screenshot 3](screenshot/3.png)
+4. **Settings Panel**
+   ![Screenshot 4](screenshot/4.png)
+5. **Theme Customization**
+   ![Screenshot 5](screenshot/5.png)
+6. **Conversation History**
+   ![Screenshot 6](screenshot/6.png)
+
 ### Prerequisites
 
-*   **JDK 21 or higher** (JDK 25 recommended).
-*   **Maven 3.8+**.
-*   (Optional) **Ollama** for local model serving.
+- **JDK 21 or higher** (JDK 25 recommended).
+- **Maven 3.8+**.
+- (Optional) **Ollama** for local model serving.
 
 ### Installation & Run
 
 1.  **Clone the repository**:
+
     ```bash
     git clone https://github.com/Dilla-University-CS/DUAcademiaAIChat.git
     cd DUAcademiaAIChat
     ```
 
 2.  **Build the project**:
+
     ```bash
     mvn clean package
     ```
@@ -62,21 +83,24 @@ The project is built on a robust, modular architecture (`edu.du.et.chatapp`) tha
 ## 🛠️ Configuration
 
 **Provider Setup:**
+
 1.  Access **Settings** (Gear icon).
 2.  Choose your preferred provider (Ollama, Local LM, Groq, or OpenRouter).
 3.  Configure API keys or server hosts as required.
 
 **Model Management:**
-*   Automatically fetch available models from providers or manually import GGUF files for local inference.
+
+- Automatically fetch available models from providers or manually import GGUF files for local inference.
 
 **Personalization:**
-*   Adjust Font Family, Font Size, and toggle between Light/Dark themes. Theme changes propagate instantly across the entire application, including the chat interface.
+
+- Adjust Font Family, Font Size, and toggle between Light/Dark themes. Theme changes propagate instantly across the entire application, including the chat interface.
 
 ---
 
 ## 🏛️ Credits
 
-Developed with excellence by the **Dilla University Computer Science Department**. 
+Developed with excellence by the **Dilla University Computer Science Department**.
 
 ---
 
